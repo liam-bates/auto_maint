@@ -1,10 +1,11 @@
 """Web app to save maintenance schedule of a users car"""
 
-from flask import Flask, render_template, request, session
-from werkzeug.security import check_password_hash, generate_password_hash
+from functools import wraps
+from flask import Flask, redirect, render_template, request, session
 from flask_session import Session
+from werkzeug.security import check_password_hash, generate_password_hash
 
-from models import User, db
+from models import Car, Odometer, User, db
 
 app = Flask(__name__)
 
@@ -19,22 +20,43 @@ app.config["SESSION_TYPE"] = "sqlalchemy"
 Session(app)
 
 
+def login_required(f):
+    """
+    Decorate routes to require login.
+
+    http://flask.pocoo.org/docs/1.0/patterns/viewdecorators/
+    """
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get("user_id") is None:
+            return redirect("/")
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     """Index route"""
     # Check if a standard GET request
     if request.method == 'GET':
+        # If user already signed in redirect to the home route
+        if session.get("user_id"):
+            return redirect('/home')
+        
         # If so render the landing page
         return render_template('index.html')
 
-    # Forget any user_id
-    session.clear()
+    # Ensure user provided email and password on form
+    if not request.form['email'] or not request.form['password']:
+        return "Error: No username and/or password."
 
     # Query the DB for a matching email address and save it as user object
     user = User.query.filter(User.email == request.form['email']).first()
 
     # Check if user is blocked
-    if user.blocked:
+    if user and user.blocked:
         return "ERROR: User Blocked"
 
     # Check that a user was found and password correct
@@ -53,12 +75,12 @@ def index():
         return "invalid username and/or password"
     else:
         # Save user id as session user id
-        session["user_id"] = user.id
+        session["user_id"] = user.user_id
         # Reset failed login attempts
         user.failed_logins = 0
         # Commit to DB
         db.session.commit()
-        return f"Logged in succesfully. Welcome {user.name}!"
+        return home()
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -97,3 +119,31 @@ def register():
     # Commit to the DB
     db.session.commit()
     return f"Thanks for registering {user.name}!"
+
+
+@app.route('/home', methods=['GET', 'POST'])
+@login_required
+def home():
+
+
+    # newcar = Odometer(car_id=3, reading=102000, reading_date=datetime.date(2019, 2, 1))
+    # db.session.add(newcar)
+    # db.session.commit()
+    # print()
+
+    cars = Car.query.filter(Car.user_id == session["user_id"]).all()
+
+    return render_template("home.html", cars=cars)
+
+
+
+
+@app.route("/logout")
+def logout():
+    """Log user out"""
+
+    # Forget any user_id
+    session.clear()
+
+    # Redirect user to landing page
+    return redirect("/")

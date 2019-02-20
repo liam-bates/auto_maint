@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block main %}
+{% if cars %}
+<table class="table">
+    <thead>
+        <th>Car Name</th>
+        <th>Last Reported Mileage</th>
+        <th>Estimated Current Mileage</th>
+        <th>Age</th>
+        <th>Status</th>
+        <th></th>
+    </thead>
+    <tbody>
+        {% for car in cars %}
+        <tr>
+            <td>{{ car.car_name }}</td>
+            <td>{{ car.last_odometer().reading }}</td>
+            <td>{{ car.est_mileage() }}</td>
+            <td>TBA</td>
+            <td><button type="button" class="btn btn btn-success">Status</button></td>
+            <td>
+                <a href="/car" class="btn btn btn-primary" role="button">Edit</a>
+                <a href="/car" class="btn btn btn-danger" role="button">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<h1>Welcome!</h1>
+{% endif %}
+{% endblock %}
