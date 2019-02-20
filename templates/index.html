@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block title %}Welcome!{% endblock %}
+
+{% block main %}
+    <h1>Welcome!</h1> 
+    <p>Auto Maintenance reminds you when to perform regular maintenance on your
+    vehicle based on its recomended maintenance schedule.</p>
+    <h2>Login:</h2>
+    <form action="/" method="post">
+        Email:<br>
+        <input type="email" name="email" required>
+        <br>
+        Password:<br>
+        <input type="password" name="password" required>
+        <br>
+        <input type="submit" name="login" value="Login">
+    </form>
+    <br>
+    <a href="/register">Register</a>
+{% endblock %}
