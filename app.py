@@ -41,10 +41,10 @@ def index():
     """Index route"""
     # Check if a standard GET request
     if request.method == 'GET':
-        # If user already signed in redirect to the home route
+        # If user already signed in redirect to the cars route
         if session.get("user_id"):
-            return redirect('/home')
-        
+            return redirect('/cars')
+
         # If so render the landing page
         return render_template('index.html')
 
@@ -80,7 +80,7 @@ def index():
         user.failed_logins = 0
         # Commit to DB
         db.session.commit()
-        return home()
+        return redirect('/cars')
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -118,27 +118,56 @@ def register():
     db.session.add(user)
     # Commit to the DB
     db.session.commit()
-    return f"Thanks for registering {user.name}!"
+
+    # Obtain new user model from the db
+    user = User.query.filter(User.email == request.form['email']).first()
+
+    # Start new session
+    session["user_id"] = user.user_id
+    db.session.commit()
+
+    return redirect('/cars')
 
 
-@app.route('/home', methods=['GET', 'POST'])
+@app.route('/cars', methods=['GET', 'POST'])
 @login_required
-def home():
+def cars():
 
-
-    # newcar = Odometer(car_id=3, reading=102000, reading_date=datetime.date(2019, 2, 1))
-    # db.session.add(newcar)
-    # db.session.commit()
-    # print()
-
+    # Query db for users info and cars
+    # TODO: Add method for the user to pull in all of their cars
     cars = Car.query.filter(Car.user_id == session["user_id"]).all()
+    user = User.query.filter(User.user_id == session["user_id"]).first()
 
-    return render_template("home.html", cars=cars)
+    return render_template("cars.html", cars=cars, user=user)
 
 
+@app.route('/addcar', methods=['GET', 'POST'])
+@login_required
+def add_car():
+
+    # If a GET request send back form page
+    if request.method == 'GET':
+        return render_template("addcar.html")
+
+    # If a POST request check that all fields completed
+    if None in (request.form['car_name'], request.form['date_manufactured'],
+                request.form['mileage']):
+        return "ERROR: Missing required field/s on form."
+
+    # Create a new car object and add to db using add method 
+    new_car = Car(user_id=session["user_id"],
+        car_name=request.form['car_name'],
+        car_built=request.form['date_manufactured']).add()
+
+    # Use method to add new odometer reading for the car
+    new_car.add_odom_reading(request.form['mileage'])
+
+    # Return to the landing screen
+    return redirect('/cars')
 
 
-@app.route("/logout")
+@app.route('/logout', methods=['GET'])
+@login_required
 def logout():
     """Log user out"""
 
@@ -147,3 +176,17 @@ def logout():
 
     # Redirect user to landing page
     return redirect("/")
+
+
+@app.route("/cars/delete/<car_id>", methods=['GET'])
+@login_required
+def delete_car(car_id):
+    """Takes a URL and deletes the car, by the ID provided"""
+
+    delete_car = Car.query.filter_by(car_id=car_id).first()
+
+    if delete_car.user_id == session["user_id"]:
+        delete_car.delete()
+        return redirect('/cars')
+    
+    return "ERROR: Attempting to delete unauthorized record"

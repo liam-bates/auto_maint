@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Cars{% endblock %}
 
 {% block main %}
 {% if cars %}
@@ -23,13 +23,17 @@
             <td><button type="button" class="btn btn btn-success">Status</button></td>
             <td>
                 <a href="/car" class="btn btn btn-primary" role="button">Edit</a>
-                <a href="/car" class="btn btn btn-danger" role="button">Delete</a>
+                <a href="/cars/delete/{{ car.car_id }}" class="btn btn btn-danger" role="button">Delete</a>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 {% else %}
-<h1>Welcome!</h1>
+<h1>Hi {{ user.name }}!</h1>
+<p>Welcome to Auto Maintenance. Here you can add your cars, mileage readings and your scheduled maintenance events for
+    your vehicle.</p>
+<p>To begin add a car: </p>
 {% endif %}
+<a href="/addcar" class="btn btn btn-primary" role="button">Add a car</a>
 {% endblock %}

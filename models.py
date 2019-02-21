@@ -2,7 +2,6 @@
 import datetime
 
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import desc
 
 db = SQLAlchemy()
 
@@ -17,6 +16,7 @@ class User(db.Model):
     name = db.Column(db.String(128), nullable=False)
     failed_logins = db.Column(db.SmallInteger, default=0, nullable=False)
     blocked = db.Column(db.Boolean, default=False)
+    cars = db.relationship('Car', cascade='all,delete', backref='user')
 
 
 class Car(db.Model):
@@ -26,29 +26,46 @@ class Car(db.Model):
     user_id = db.Column(db.ForeignKey("users.user_id"), nullable=False)
     car_name = db.Column(db.String(128), nullable=False)
     car_built = db.Column(db.Date, nullable=False)
+    odo_readings = db.relationship('Odometer', cascade='all,delete', backref='user')
 
     def est_mileage(self):
         """
-        Returns the current estimated mileage based
-        on the average over the life of the vehicle.
+        Returns the current estimated mileage by looking at the last odometer 
+        reading and comparing it to the age of the vehicle.
         """
         if not self.last_odometer():
             return
 
-        age_days = (datetime.date.today() - self.car_built).days
-        days_since_mileage = (datetime.date.today() - self.last_odometer().reading_date).days
-        mpd = self.last_odometer().reading / age_days
+        age_at_reading = (
+            self.last_odometer().reading_date - self.car_built).days
+        days_since_mileage = (
+            datetime.date.today() - self.last_odometer().reading_date).days
+        mpd = self.last_odometer().reading / age_at_reading
         estimate = (mpd * days_since_mileage) + self.last_odometer().reading
 
         return int(estimate)
 
     def last_odometer(self):
-        # Search for all odometer readings for the car. 
+        # Search for all odometer readings for the car.
         # Show descending / only first
-        odo = Odometer.query.filter(
-            self.car_id == Odometer.car_id).order_by(
-                Odometer.reading_id.desc()).first()
+        odo = Odometer.query.filter(self.car_id == Odometer.car_id).order_by(
+            Odometer.reading_id.desc()).first()
         return odo
+
+    def add_odom_reading(self, mileage, date=datetime.date.today()):
+        new_reading = Odometer(car_id=self.car_id, reading=mileage, reading_date=date)
+        # Write to DB
+        db.session.add(new_reading)
+        db.session.commit()
+
+    def add(self):
+        db.session.add(self)
+        db.session.commit()
+        return self
+    
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
 
 
 class Odometer(db.Model):
@@ -58,3 +75,6 @@ class Odometer(db.Model):
     car_id = db.Column(db.ForeignKey("cars.car_id"), nullable=False)
     reading = db.Column(db.Integer, nullable=False)
     reading_date = db.Column(db.Date, nullable=False)
+
+    def delete(self):
+        db.session.delete(self)
