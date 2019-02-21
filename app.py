@@ -5,6 +5,7 @@ from flask import Flask, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
+
 from models import Car, Odometer, User, db
 
 app = Flask(__name__)
@@ -147,15 +148,16 @@ def add_car():
 
     # If a GET request send back form page
     if request.method == 'GET':
-        return render_template("addcar.html")
+        return render_template("add_car.html")
 
     # If a POST request check that all fields completed
     if None in (request.form['car_name'], request.form['date_manufactured'],
                 request.form['mileage']):
         return "ERROR: Missing required field/s on form."
 
-    # Create a new car object and add to db using add method 
-    new_car = Car(user_id=session["user_id"],
+    # Create a new car object and add to db using add method
+    new_car = Car(
+        user_id=session["user_id"],
         car_name=request.form['car_name'],
         car_built=request.form['date_manufactured']).add()
 
@@ -178,7 +180,7 @@ def logout():
     return redirect("/")
 
 
-@app.route("/cars/delete/<car_id>", methods=['GET'])
+@app.route("/car/<car_id>/delete", methods=['GET'])
 @login_required
 def delete_car(car_id):
     """Takes a URL and deletes the car, by the ID provided"""
@@ -188,5 +190,21 @@ def delete_car(car_id):
     if delete_car.user_id == session["user_id"]:
         delete_car.delete()
         return redirect('/cars')
-    
+
     return "ERROR: Attempting to delete unauthorized record"
+
+
+@app.route("/car/<car_id>", methods=['GET'])
+@login_required
+def car(car_id):
+    """Provides an overview of a car record. Allows editing and deletion."""
+
+    # Pull car from db using id
+    car = Car.query.filter(Car.car_id == car_id).first()
+
+    # Verify the user has access to the record and that it exists
+    if not car or car.user_id != session['user_id']:
+        return "ERROR: Unauthorized access"
+    
+    # Render car template
+    return render_template('car.html', car=car)

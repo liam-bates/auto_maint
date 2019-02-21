@@ -34,7 +34,9 @@ class Car(db.Model):
         reading and comparing it to the age of the vehicle.
         """
         if not self.last_odometer():
-            return
+            return 0
+
+        print(len(self.odo_readings))
 
         age_at_reading = (
             self.last_odometer().reading_date - self.car_built).days

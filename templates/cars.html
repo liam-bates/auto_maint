@@ -4,27 +4,25 @@
 
 {% block main %}
 {% if cars %}
+<h1>Vehicles</h1>
+<p>Below is a table showing all vehicles on this account and their present status. To edit or find out more about a
+    particular vehicle click on its name.</p>
 <table class="table">
     <thead>
-        <th>Car Name</th>
+        <th>Vehicle Name</th>
         <th>Last Reported Mileage</th>
         <th>Estimated Current Mileage</th>
         <th>Age</th>
         <th>Status</th>
-        <th></th>
     </thead>
     <tbody>
         {% for car in cars %}
         <tr>
-            <td>{{ car.car_name }}</td>
-            <td>{{ car.last_odometer().reading }}</td>
-            <td>{{ car.est_mileage() }}</td>
+            <td><a href="/car/{{ car.car_id }}">{{ car.car_name }}</a></td>
+            <td>{{ car.last_odometer().reading }} miles</td>
+            <td>{{ car.est_mileage() }} miles</td>
             <td>TBA</td>
             <td><button type="button" class="btn btn btn-success">Status</button></td>
-            <td>
-                <a href="/car" class="btn btn btn-primary" role="button">Edit</a>
-                <a href="/cars/delete/{{ car.car_id }}" class="btn btn btn-danger" role="button">Delete</a>
-            </td>
         </tr>
         {% endfor %}
     </tbody>
@@ -35,5 +33,5 @@
     your vehicle.</p>
 <p>To begin add a car: </p>
 {% endif %}
-<a href="/addcar" class="btn btn btn-primary" role="button">Add a car</a>
+<a href="/addcar" class="btn btn btn-primary" role="button">Add a vehicle</a>
 {% endblock %}
