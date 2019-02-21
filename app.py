@@ -1,4 +1,4 @@
-"""Web app to save maintenance schedule of a users car"""
+"""Web app to save maintenance schedule of a users vehicle"""
 
 from functools import wraps
 
@@ -6,7 +6,7 @@ from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from models import Car, Odometer, User, db
+from models import Car, User, db
 
 app = Flask(__name__)
 
@@ -44,7 +44,7 @@ def index():
     if request.method == 'GET':
         # Redirect to the home route if the user already logged in
         if session.get("user_id"):
-            return redirect('/cars')
+            return redirect('/home')
 
         # Render the landing page
         return render_template('index.html')
@@ -87,7 +87,7 @@ def index():
                     # Commit to DB
                     db.session.commit()
                     # Direct to home landing page
-                    return redirect('/cars')
+                    return redirect('/home')
 
     # Return index page again
     return redirect('/')
@@ -138,50 +138,50 @@ def register():
                 db.session.commit()
 
                 # Redirect to the vehicle landing page
-                return redirect('/cars')
+                return redirect('/home')
 
     return redirect('/register')
 
 
-@app.route('/cars', methods=['GET', 'POST'])
+@app.route('/home', methods=['GET', 'POST'])
 @login_required
-def cars():
+def home():
     """ Home landing page for users. Showing a table of their vehicles """
 
-    # Query db for users info and cars
-    cars = Car.query.filter(Car.user_id == session["user_id"]).all()
+    # Query db for users info and vehicles
+    vehicles = Car.query.filter(Car.user_id == session["user_id"]).all()
     user = User.query.filter(User.user_id == session["user_id"]).first()
 
-    return render_template("cars.html", cars=cars, user=user)
+    return render_template("home.html", vehicles=vehicles, user=user)
 
 
-@app.route('/addcar', methods=['GET', 'POST'])
+@app.route('/addvehicle', methods=['GET', 'POST'])
 @login_required
-def add_car():
+def add_vehicle():
     """ Simple page to allow user to create a new vehicle in the app. """
 
     # If a GET request send back form page
     if request.method == 'GET':
-        return render_template("add_car.html")
+        return render_template("add_vehicle.html")
 
     # If a POST request check that all fields completed, otherwise flash error
     if any(field is '' for field in [
-            request.form['car_name'], request.form['date_manufactured'],
+            request.form['vehicle_name'], request.form['date_manufactured'],
             request.form['mileage']
     ]):
         flash(u'Missing required field/s when adding new vehicle.', 'danger')
     else:
-        # Create a new car object and add to db using add method
-        new_car = Car(
+        # Create a new vehicle object and add to db using add method
+        new_vehicle = Car(
             user_id=session["user_id"],
-            car_name=request.form['car_name'],
-            car_built=request.form['date_manufactured']).add()
+            vehicle_name=request.form['vehicle_name'],
+            vehicle_built=request.form['date_manufactured']).add()
 
-        # Use method to add new odometer reading for the car
-        new_car.add_odom_reading(request.form['mileage'])
-        flash(f'{new_car.car_name} added to your vehicle list.', 'primary')
+        # Use method to add new odometer reading for the vehicle
+        new_vehicle.add_odom_reading(request.form['mileage'])
+        flash(f'{new_vehicle.vehicle_name} added to your vehicle list.', 'primary')
     # Return to the landing screen
-    return redirect('/cars')
+    return redirect('/home')
 
 
 @app.route('/logout', methods=['GET'])
@@ -196,35 +196,35 @@ def logout():
     return redirect("/")
 
 
-@app.route("/car/<car_id>/delete", methods=['GET'])
+@app.route("/vehicle/<vehicle_id>/delete", methods=['GET'])
 @login_required
-def delete_car(car_id):
-    """Takes a URL and deletes the car, by the ID provided"""
+def delete_vehicle(vehicle_id):
+    """Takes a URL and deletes the vehicle, by the ID provided"""
 
-    delete_car = Car.query.filter_by(car_id=car_id).first()
+    delete_vehicle = Car.query.filter_by(vehicle_id=vehicle_id).first()
 
-    if delete_car.user_id == session["user_id"]:
-        delete_car.delete()
-        flash(f'{delete_car.car_name} deleted from your vehicle list.',
+    if delete_vehicle.user_id == session["user_id"]:
+        delete_vehicle.delete()
+        flash(f'{delete_vehicle.vehicle_name} deleted from your vehicle list.',
               'primary')
     else:
         flash('Unauthorized access to vehicle record.', 'primary')
 
-    return redirect('/cars')
+    return redirect('/home')
 
 
-@app.route("/car/<car_id>", methods=['GET'])
+@app.route("/vehicle/<vehicle_id>", methods=['GET'])
 @login_required
-def car(car_id):
-    """Provides an overview of a car record. Allows editing and deletion."""
+def vehicle(vehicle_id):
+    """Provides an overview of a vehicle record. Allows editing and deletion."""
 
-    # Pull car from db using id
-    car = Car.query.filter(Car.car_id == car_id).first()
+    # Pull vehicle from db using id
+    vehicle = Car.query.filter(Car.vehicle_id == vehicle_id).first()
 
     # Verify the user has access to the record and that it exists
-    if not car or car.user_id != session['user_id']:
+    if not vehicle or vehicle.user_id != session['user_id']:
         flash(u'Unauthorized access to vehicle record', 'danger')
-        return redirect('/cars')
+        return redirect('/home')
 
-    # Render car template
-    return render_template('car.html', car=car)
+    # Render vehicle template
+    return render_template('vehicle.html', vehicle=vehicle)

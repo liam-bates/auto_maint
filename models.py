@@ -16,16 +16,16 @@ class User(db.Model):
     name = db.Column(db.String(128), nullable=False)
     failed_logins = db.Column(db.SmallInteger, default=0, nullable=False)
     blocked = db.Column(db.Boolean, default=False)
-    cars = db.relationship('Car', cascade='all,delete', backref='user')
+    vehicles = db.relationship('Car', cascade='all,delete', backref='user')
 
 
 class Car(db.Model):
     """Car of a user"""
-    __tablename__ = "cars"
-    car_id = db.Column(db.Integer, primary_key=True)
+    __tablename__ = "vehicles"
+    vehicle_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.ForeignKey("users.user_id"), nullable=False)
-    car_name = db.Column(db.String(128), nullable=False)
-    car_built = db.Column(db.Date, nullable=False)
+    vehicle_name = db.Column(db.String(128), nullable=False)
+    vehicle_built = db.Column(db.Date, nullable=False)
     odo_readings = db.relationship(
         'Odometer', cascade='all,delete', backref='user')
 
@@ -40,7 +40,7 @@ class Car(db.Model):
         print(len(self.odo_readings))
 
         age_at_reading = (
-            self.last_odometer().reading_date - self.car_built).days
+            self.last_odometer().reading_date - self.vehicle_built).days
         days_since_mileage = (
             datetime.date.today() - self.last_odometer().reading_date).days
         mpd = self.last_odometer().reading / age_at_reading
@@ -50,16 +50,16 @@ class Car(db.Model):
 
     def last_odometer(self):
         """ Method to provide last odometer reading for the vehicle. """
-        # Search for all odometer readings for the car.
+        # Search for all odometer readings for the vehicle.
         # Show descending / only first
-        odo = Odometer.query.filter(self.car_id == Odometer.car_id).order_by(
+        odo = Odometer.query.filter(self.vehicle_id == Odometer.vehicle_id).order_by(
             Odometer.reading_id.desc()).first()
         return odo
 
     def add_odom_reading(self, mileage, date=datetime.date.today()):
         """ Method to add an odometer reading """
         new_reading = Odometer(
-            car_id=self.car_id, reading=mileage, reading_date=date)
+            vehicle_id=self.vehicle_id, reading=mileage, reading_date=date)
         # Write to DB
         db.session.add(new_reading)
         db.session.commit()
@@ -80,7 +80,7 @@ class Odometer(db.Model):
     """ Odometer reading for a vehicle. """
     __tablename__ = "odometers"
     reading_id = db.Column(db.Integer, primary_key=True)
-    car_id = db.Column(db.ForeignKey("cars.car_id"), nullable=False)
+    vehicle_id = db.Column(db.ForeignKey("vehicles.vehicle_id"), nullable=False)
     reading = db.Column(db.Integer, nullable=False)
     reading_date = db.Column(db.Date, nullable=False)
 

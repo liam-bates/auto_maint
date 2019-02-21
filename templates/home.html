@@ -3,7 +3,7 @@
 {% block title %}Cars{% endblock %}
 
 {% block main %}
-{% if cars %}
+{% if vehicles %}
 <h1>Vehicles</h1>
 <p>Below is a table showing all vehicles on this account and their present status. To edit or find out more about a
     particular vehicle click on its name.</p>
@@ -16,11 +16,11 @@
         <th>Status</th>
     </thead>
     <tbody>
-        {% for car in cars %}
+        {% for vehicle in vehicles %}
         <tr>
-            <td><a href="/car/{{ car.car_id }}">{{ car.car_name }}</a></td>
-            <td>{{ car.last_odometer().reading }} miles</td>
-            <td>{{ car.est_mileage() }} miles</td>
+            <td><a href="/vehicle/{{ vehicle.vehicle_id }}">{{ vehicle.vehicle_name }}</a></td>
+            <td>{{ vehicle.last_odometer().reading }} miles</td>
+            <td>{{ vehicle.est_mileage() }} miles</td>
             <td>TBA</td>
             <td><button type="button" class="btn btn btn-success">Status</button></td>
         </tr>
@@ -29,9 +29,9 @@
 </table>
 {% else %}
 <h1>Hi {{ user.name }}!</h1>
-<p>Welcome to Auto Maintenance. Here you can add your cars, mileage readings and your scheduled maintenance events for
+<p>Welcome to Auto Maintenance. Here you can add your vehicles, mileage readings and your scheduled maintenance events for
     your vehicle.</p>
-<p>To begin add a car: </p>
+<p>To begin add a vehicle: </p>
 {% endif %}
-<a href="/addcar" class="btn btn btn-primary" role="button">Add a vehicle</a>
+<a href="/addvehicle" class="btn btn btn-primary" role="button">Add a vehicle</a>
 {% endblock %}

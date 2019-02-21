@@ -1,18 +1,18 @@
 {% extends "layout.html" %}
 
-{% block title %}{{ car.car_name }}{% endblock %}
+{% block title %}{{ vehicle.vehicle_name }}{% endblock %}
 
 {% block main %}
 
-<h1>{{ car.car_name }}</h1>
+<h1>{{ vehicle.vehicle_name }}</h1>
 <div class="row">
     <div class="col">
         <h4>Car Info</h4>
-        <p>Last reported mileage: {{ car.last_odometer().reading }} miles</p>
-        <p>Estimated Current Mileage: {{ car.est_mileage() }} miles</p>
+        <p>Last reported mileage: {{ vehicle.last_odometer().reading }} miles</p>
+        <p>Estimated Current Mileage: {{ vehicle.est_mileage() }} miles</p>
         <p>Age: TBA</p>
         <button type="button" class="btn btn btn-primary">Edit</button>
-        <a class="btn btn-danger" href="/car/{{ car.car_id }}/delete" role="button">Delete</a>
+        <a class="btn btn-danger" href="/vehicle/{{ vehicle.vehicle_id }}/delete" role="button">Delete</a>
     </div>
     <div class="col">
         <h4>Odometer Readings</h4>
@@ -22,7 +22,7 @@
                 <th>Mileage</th>
             </thead>
             <tbody>
-                {% for reading in car.odo_readings %}
+                {% for reading in vehicle.odo_readings %}
 
                 <tr>
                     <td>{{ reading.reading_date }}</td>
