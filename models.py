@@ -1,6 +1,5 @@
 """ auto_maint app models defined """
 import datetime
-from dateutil.relativedelta import relativedelta
 
 from flask_sqlalchemy import SQLAlchemy
 
@@ -39,8 +38,6 @@ class Vehicle(db.Model):
         """
         if not self.last_odometer():
             return 0
-
-        print(len(self.odo_readings))
 
         age_at_reading = (
             self.last_odometer().reading_date - self.vehicle_built).days
@@ -108,8 +105,7 @@ class Schedule(db.Model):
     """ A maintenance schedule for a vehicle. Represents a single task. """
     __tablename__ = "schedules"
     schedule_id = db.Column(db.Integer, primary_key=True)
-    vehicle_id = db.Column(
-        db.ForeignKey("vehicles.vehicle_id"), nullable=False)
+    vehicle_id = db.Column(db.ForeignKey("vehicles.vehicle_id"), nullable=False)
     schedule_name = db.Column(db.String(128), nullable=True)
     schedule_desc = db.Column(db.String(256))
     freq_miles = db.Column(db.Integer, nullable=True)

@@ -23,15 +23,20 @@
             {% if session.user_id %}
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="/addodo">Add Odometer Reading</a>
+                    <a class="nav-link" href="/home">Home</a>
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                    <a class="nav-link dropdown-toggle" href="/home" id="navbarDropdown" role="button"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Vehicles
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="/home">View Vehicles</a>
+                        {% for vehicle in user.vehicles %}
+                        <a class="dropdown-item" href="/vehicle/{{ vehicle.vehicle_id }}">{{ vehicle.vehicle_name }}</a>
+                        {% endfor %}
+                        {% if user.vehicles %}
+                        <div class="dropdown-divider"></div>
+                        {% endif %}
                         <a class="dropdown-item" href="/addvehicle">Add Vehicle</a>
                     </div>
                 </li>

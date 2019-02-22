@@ -163,7 +163,9 @@ def add_vehicle():
 
     # If a GET request send back form page
     if request.method == 'GET':
-        return render_template("add_vehicle.html")
+        # Query DB for user
+        user = User.query.filter(User.user_id == session["user_id"]).first()
+        return render_template("add_vehicle.html", user=user)
 
     # If a POST request check that all fields completed, otherwise flash error
     if any(field is '' for field in [
@@ -249,5 +251,7 @@ def vehicle(vehicle_id):
                     f'Unable to add mileage as it is lower than a previous reading.',
                     'danger')
 
+    # Query DB for user's info
+    user = User.query.filter(User.user_id == session["user_id"]).first()
     # Render vehicle template
-    return render_template('vehicle.html', vehicle=lookup_vehicle)
+    return render_template('vehicle.html', vehicle=lookup_vehicle, user=user)
