@@ -6,7 +6,7 @@ from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from models import Vehicle, User, db
+from models import Vehicle, User, Maintenance, db
 
 app = Flask(__name__)
 
@@ -255,3 +255,50 @@ def vehicle(vehicle_id):
     user = User.query.filter(User.user_id == session["user_id"]).first()
     # Render vehicle template
     return render_template('vehicle.html', vehicle=lookup_vehicle, user=user)
+
+
+@app.route("/vehicle/<vehicle_id>/addmaint", methods=['GET', 'POST'])
+@login_required
+def add_maint(vehicle_id):
+    """Allow user to add a maintenance schedule event."""
+
+    # Pull vehicle from db using id
+    lookup_vehicle = Vehicle.query.filter(
+        Vehicle.vehicle_id == vehicle_id).first()
+
+    # Check that user has access to this vehicle
+    if not lookup_vehicle or lookup_vehicle.user_id != session['user_id']:
+        flash(u'Unauthorized access to vehicle record', 'danger')
+        return redirect('/home')
+
+    # If a GET request send back form page
+    if request.method == 'GET':
+        # Query DB for user
+        user = User.query.filter(User.user_id == session["user_id"]).first()
+        return render_template("add_maint.html", user=user)
+
+    # POST begins
+    # Add the maintenance event for the vehicle.
+    lookup_vehicle.add_maintenance(
+        request.form['name'], request.form['description'],
+        request.form['freq_miles'], request.form['freq_months'])
+
+@app.route("/vehicle/<vehicle_id>/maintenance/<maintenance_id>", methods=['GET', 'POST'])
+@login_required
+def maintenance(vehicle_id, maintenance_id):
+    # Pull vehicle, maintenance and user reocrds from db using id
+    lookup_vehicle = Vehicle.query.filter(
+        Vehicle.vehicle_id == vehicle_id).first()
+    lookup_maintenance = Maintenance.query.filter(
+        Maintenance.maintenance_id == maintenance_id).first()
+    user = User.query.filter(User.user_id == session["user_id"]).first()
+
+    # Verify the user has access to the record and that it exists
+    if not lookup_vehicle.maintenance or lookup_vehicle.user_id != session['user_id']:
+        flash(u'Unauthorized access to vehicle record', 'danger')
+        return redirect('/home')
+
+    # Pull maintenance record from db
+
+    
+    return render_template("maintenance.html", maintenance=lookup_maintenance, user=user)

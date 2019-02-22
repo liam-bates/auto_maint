@@ -28,8 +28,8 @@ class Vehicle(db.Model):
     vehicle_built = db.Column(db.Date, nullable=False)
     odo_readings = db.relationship(
         'Odometer', cascade='all,delete', backref='vehicle')
-    schedules = db.relationship(
-        'Schedule', cascade='all,delete', backref='vehicle')
+    maintenance = db.relationship(
+        'Maintenance', cascade='all,delete', backref='vehicle')
 
     def est_mileage(self):
         """
@@ -63,6 +63,20 @@ class Vehicle(db.Model):
             vehicle_id=self.vehicle_id, reading=mileage, reading_date=date)
         # Write to DB
         db.session.add(new_reading)
+        db.session.commit()
+
+    def add_maintenance(self, name, description, freq_miles, freq_months):
+        """ Method to add a maintenance event for the vehicle. """
+        # Create a new maintenance object
+        new_maintenance = Maintenance(
+            vehicle_id=self.vehicle_id,
+            name=name,
+            description=description,
+            freq_miles=freq_miles,
+            freq_months=freq_months)
+
+        # Write to DB
+        db.session.add(new_maintenance)
         db.session.commit()
 
     def add(self):
@@ -101,24 +115,25 @@ class Odometer(db.Model):
         db.session.delete(self)
 
 
-class Schedule(db.Model):
+class Maintenance(db.Model):
     """ A maintenance schedule for a vehicle. Represents a single task. """
-    __tablename__ = "schedules"
-    schedule_id = db.Column(db.Integer, primary_key=True)
-    vehicle_id = db.Column(db.ForeignKey("vehicles.vehicle_id"), nullable=False)
-    schedule_name = db.Column(db.String(128), nullable=True)
-    schedule_desc = db.Column(db.String(256))
+    __tablename__ = "maintenance"
+    maintenance_id = db.Column(db.Integer, primary_key=True)
+    vehicle_id = db.Column(
+        db.ForeignKey("vehicles.vehicle_id"), nullable=False)
+    name = db.Column(db.String(128), nullable=True)
+    description = db.Column(db.String(256))
     freq_miles = db.Column(db.Integer, nullable=True)
-    freq_time = db.Column(db.Integer, nullable=True)
-    log = db.relationship('Log', cascade='all,delete', backref='schedule')
+    freq_months = db.Column(db.Integer, nullable=True)
+    log = db.relationship('Log', cascade='all,delete', backref='maintenance')
 
 
 class Log(db.Model):
     """ Log of maintenance undertaken in a maintenance schedule."""
     __tablename__ = "logs"
     log_id = db.Column(db.Integer, primary_key=True)
-    schedule_id = db.Column(
-        db.ForeignKey("schedules.schedule_id"), nullable=False)
+    maintenance_id = db.Column(
+        db.ForeignKey("maintenance.maintenance_id"), nullable=False)
     date = db.Column(db.Date, nullable=False)
     mileage = db.Column(db.Integer, nullable=True)
     notes = db.Column(db.String(256))
