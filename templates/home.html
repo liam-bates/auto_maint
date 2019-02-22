@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}Cars{% endblock %}
+{% block title %}Vehicles{% endblock %}
 
 {% block main %}
 {% if vehicles %}
@@ -21,7 +21,7 @@
             <td><a href="/vehicle/{{ vehicle.vehicle_id }}">{{ vehicle.vehicle_name }}</a></td>
             <td>{{ vehicle.last_odometer().reading }} miles</td>
             <td>{{ vehicle.est_mileage() }} miles</td>
-            <td>TBA</td>
+            <td>{{ vehicle.age() }} years</td>
             <td><button type="button" class="btn btn btn-success">Status</button></td>
         </tr>
         {% endfor %}

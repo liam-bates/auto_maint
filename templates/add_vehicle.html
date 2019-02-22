@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}Add Car{% endblock %}
+{% block title %}Add Vehicle{% endblock %}
 
 {% block main %}
 
@@ -11,13 +11,13 @@
     <div class="col">
         <form method="post">
             <div class="form-group">
-                <label for="vehicle_name">Car Name</label>
+                <label for="vehicle_name">Vehicle Name</label>
                 <input type="text" class="form-control" name="vehicle_name" placeholder="Your vehicle's name" required>
             </div>
             <div class="form-group">
                 <label for="name">Date Manufactured</label>
                 <input type="date" class="form-control" name="date_manufactured" required>
-                <small id="nameHelp" class="form-text text-muted">This can be found within your vehicles registration details.</small>
+                <small id="nameHelp" class="form-text text-muted">This can be found within your vehicle's registration details.</small>
             </div>
             <div class="form-group">
                 <label for="mileage">Current Total Mileage</label>

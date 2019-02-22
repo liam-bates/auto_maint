@@ -7,10 +7,10 @@
 <h1>{{ vehicle.vehicle_name }}</h1>
 <div class="row">
     <div class="col">
-        <h4>Car Info</h4>
+        <h4>Vehicle Info</h4>
         <p>Last reported mileage: {{ vehicle.last_odometer().reading }} miles</p>
         <p>Estimated Current Mileage: {{ vehicle.est_mileage() }} miles</p>
-        <p>Age: TBA</p>
+        <p>Age: {{ vehicle.age() }} years</p>
         <button type="button" class="btn btn btn-primary">Edit</button>
         <a class="btn btn-danger" href="/vehicle/{{ vehicle.vehicle_id }}/delete" role="button">Delete</a>
     </div>
@@ -31,7 +31,15 @@
                 {% endfor %}
             </tbody>
         </table>
-        <button type="button" class="btn btn btn-primary">Add reading</button>
+        <form method="post">
+            <div class="form-group">
+                <label for="mileage">Current Total Mileage</label>
+                <input type="number" class="form-control" name="mileage" placeholder="Your vehicle's current mileage"
+                    min=1 required>
+                <small id="passwordHelp" class="form-text text-muted">We recommend adding a new reading every 3-6 months for better notification accuracy.</small>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit mileage</button>
+        </form>
     </div>
 </div>
 <h4>Maintenance Events</h4>

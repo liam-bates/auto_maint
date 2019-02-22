@@ -6,7 +6,7 @@ from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from models import Car, User, db
+from models import Vehicle, User, db
 
 app = Flask(__name__)
 
@@ -149,7 +149,8 @@ def home():
     """ Home landing page for users. Showing a table of their vehicles """
 
     # Query db for users info and vehicles
-    vehicles = Car.query.filter(Car.user_id == session["user_id"]).all()
+    vehicles = Vehicle.query.filter(
+        Vehicle.user_id == session["user_id"]).all()
     user = User.query.filter(User.user_id == session["user_id"]).first()
 
     return render_template("home.html", vehicles=vehicles, user=user)
@@ -172,14 +173,15 @@ def add_vehicle():
         flash(u'Missing required field/s when adding new vehicle.', 'danger')
     else:
         # Create a new vehicle object and add to db using add method
-        new_vehicle = Car(
+        new_vehicle = Vehicle(
             user_id=session["user_id"],
             vehicle_name=request.form['vehicle_name'],
             vehicle_built=request.form['date_manufactured']).add()
 
         # Use method to add new odometer reading for the vehicle
         new_vehicle.add_odom_reading(request.form['mileage'])
-        flash(f'{new_vehicle.vehicle_name} added to your vehicle list.', 'primary')
+        flash(f'{new_vehicle.vehicle_name} added to your vehicle list.',
+              'primary')
     # Return to the landing screen
     return redirect('/home')
 
@@ -201,30 +203,51 @@ def logout():
 def delete_vehicle(vehicle_id):
     """Takes a URL and deletes the vehicle, by the ID provided"""
 
-    delete_vehicle = Car.query.filter_by(vehicle_id=vehicle_id).first()
+    # Query the db for a matching vehicle
+    del_vehicle = Vehicle.query.filter_by(vehicle_id=vehicle_id).first()
 
-    if delete_vehicle.user_id == session["user_id"]:
-        delete_vehicle.delete()
-        flash(f'{delete_vehicle.vehicle_name} deleted from your vehicle list.',
+    # Test whatever was returned to see if the vehicle is owned by the user
+    if del_vehicle.user_id == session["user_id"]:
+        del_vehicle.delete()
+        flash(f'{del_vehicle.vehicle_name} deleted from your vehicle list.',
               'primary')
+    # If not flash an error
     else:
         flash('Unauthorized access to vehicle record.', 'primary')
 
     return redirect('/home')
 
 
-@app.route("/vehicle/<vehicle_id>", methods=['GET'])
+@app.route("/vehicle/<vehicle_id>", methods=['GET', 'POST'])
 @login_required
 def vehicle(vehicle_id):
     """Provides an overview of a vehicle record. Allows editing and deletion."""
 
     # Pull vehicle from db using id
-    vehicle = Car.query.filter(Car.vehicle_id == vehicle_id).first()
+    lookup_vehicle = Vehicle.query.filter(
+        Vehicle.vehicle_id == vehicle_id).first()
 
     # Verify the user has access to the record and that it exists
-    if not vehicle or vehicle.user_id != session['user_id']:
+    if not lookup_vehicle or lookup_vehicle.user_id != session['user_id']:
         flash(u'Unauthorized access to vehicle record', 'danger')
         return redirect('/home')
 
+    # Check is a POST has been made from odometer form
+    if request.method == 'POST':
+        # Ensure value given
+        if not request.form['mileage']:
+            flash(f'No mileage reading provided.', 'danger')
+        else:
+            mileage = int(request.form['mileage'])
+            # Ensure that new mileage is higher than previous
+            if mileage > lookup_vehicle.last_odometer().reading:
+                lookup_vehicle.add_odom_reading(mileage)
+                flash(f'Mileage reading added.', 'primary')
+            # Otherwise return an error
+            else:
+                flash(
+                    f'Unable to add mileage as it is lower than a previous reading.',
+                    'danger')
+
     # Render vehicle template
-    return render_template('vehicle.html', vehicle=vehicle)
+    return render_template('vehicle.html', vehicle=lookup_vehicle)
