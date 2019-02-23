@@ -289,6 +289,10 @@ def add_maint(vehicle_id):
          ]):
         new_maintenance.add_log(request.form['date'], request.form['mileage'],
                                 request.form['notes'])
+    
+    else:
+        new_maintenance.est_log()
+
 
     flash(f'{request.form["name"]} maintenance record added', 'primary')
     return redirect("vehicle/" + vehicle_id)

@@ -10,7 +10,8 @@
         <h2 class="mt-2">Vehicle Info</h2>
         <p><b>Last reported mileage: </b>{{ vehicle.last_odometer().reading }} miles</p>
         <p><b>Estimated Current Mileage: </b> {{ vehicle.est_mileage() }} miles</p>
-        <p><b>Age: </b>{{ vehicle.age() }} years</p>
+        <p><b>Date Manufactured: </b>{{ vehicle.vehicle_built }}</p>
+        <p><b>Age: </b>{{ vehicle.age() / 365.2524 }} years</p>
         <button type="button" class="btn btn btn-primary">Edit</button>
         <a class="btn btn-danger" href="/vehicle/{{ vehicle.vehicle_id }}/delete" role="button">Delete</a>
     </div>
