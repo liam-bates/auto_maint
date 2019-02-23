@@ -36,15 +36,21 @@ class Vehicle(db.Model):
         Returns the current estimated mileage by looking at the last odometer
         reading and comparing it to the age of the vehicle.
         """
-        if not self.last_odometer():
+        if not self.odo_readings:
             return 0
 
-        age_at_reading = (
-            self.last_odometer().reading_date - self.vehicle_built).days
-        days_since_mileage = (
-            datetime.date.today() - self.last_odometer().reading_date).days
-        mpd = self.last_odometer().reading / age_at_reading
-        estimate = (mpd * days_since_mileage) + self.last_odometer().reading
+        if len(self.odo_readings) >= 2:
+            second_last = self.odo_readings[-2]
+                
+        else:
+            second_last = Odometer(reading=0, reading_date=self.vehicle_built)
+        
+        last = self.odo_readings[-1]
+        days_between = (last.reading_date - second_last.reading_date).days
+        miles_between = last.reading - second_last.reading
+        mpd = miles_between / days_between
+        days_since = (datetime.date.today() - last.reading_date).days
+        estimate = (mpd * days_since) + last.reading
 
         return int(estimate)
 
