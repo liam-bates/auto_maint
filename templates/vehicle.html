@@ -64,7 +64,13 @@
                     </td>
                     <td scope="col" class="d-none d-sm-table-cell">{{ maintenance.freq_miles}} miles</td>
                     <td scope="col" class="d-none d-sm-table-cell">{{ maintenance.freq_months }} months</td>
-                    <td><button type="button" class="btn btn btn-success">Status (TBA)</button></td>
+                    {% if maintenance.status() == 'Good' %}
+                    <td><button type="button" class="btn btn btn-success">{{ maintenance.status() }}</button></td>
+                    {% elif maintenance.status() == 'Overdue' %}
+                    <td><button type="button" class="btn btn btn-warning">{{ maintenance.status() }}</button></td>
+                    {% else %}
+                    <td><button type="button" class="btn btn btn-danger">{{ maintenance.status() }}</button></td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>

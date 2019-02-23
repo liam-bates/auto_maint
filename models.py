@@ -41,10 +41,10 @@ class Vehicle(db.Model):
 
         if len(self.odo_readings) >= 2:
             second_last = self.odo_readings[-2]
-                
+
         else:
             second_last = Odometer(reading=0, reading_date=self.vehicle_built)
-        
+
         last = self.odo_readings[-1]
         days_between = (last.reading_date - second_last.reading_date).days
         miles_between = last.reading - second_last.reading
@@ -147,6 +147,55 @@ class Maintenance(db.Model):
         # Write to DB
         db.session.add(new_log)
         db.session.commit()
+
+    def miles_until_due(self):
+        #
+        if not self.logs:
+            miles_due = 0
+        else:
+            last_log = self.logs[-1]
+
+            miles_due = self.freq_miles - (
+                self.vehicle.est_mileage() - last_log.mileage)
+
+            if miles_due < 0:
+                miles_due = 0
+
+        return miles_due
+
+    def days_until_due(self):
+        #
+        if not self.logs:
+            days_due = 0
+        else:
+            last_log = self.logs[-1]
+
+            days_due = ((self.freq_months / 12) * 365.2524) - (
+                datetime.date.today() - last_log.date).days
+
+            if days_due < 0:
+                days_due = 0
+
+        return int(days_due)
+
+    def status(self):
+
+        days_due = self.days_until_due()
+        miles_due = self.miles_until_due()
+
+        if days_due == 0 or miles_due == 0:
+            current_status = 'Overdue'
+
+        elif days_due < 14 or miles_due < 500:
+            current_status = 'Maintenance Due'
+        
+        else:
+            current_status = 'Good'
+        
+        return current_status
+        
+
+
 
 
 class Log(db.Model):

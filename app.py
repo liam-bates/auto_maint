@@ -313,11 +313,8 @@ def maintenance(vehicle_id, maintenance_id):
         return redirect('/home')
 
     if request.method == 'POST':
-        if any(field is '' for field in [
-                request.form['date'], request.form['mileage'],
-                request.form['notes']
-        ]):
-            flash(u'Missing required field/s for new user account', 'danger')
+        if request.form['date'] == '' or request.form['mileage'] == '':
+            flash(u'Missing required field/s for new log entry', 'danger')
         else:
             lookup_maintenance.add_log(request.form['date'],
                                        request.form['mileage'],
