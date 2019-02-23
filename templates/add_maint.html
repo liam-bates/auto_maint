@@ -3,52 +3,48 @@
 {% block title %}New Maintenance Schedule{% endblock %}
 
 {% block main %}
-
-<div class="container">
-    <h2>New Maintenance Schedule</h2>
+<div class="col-sm-6">
+    <h2 class="mt-2">New Maintenance Schedule</h2>
     <p>Please enter the information regarding regular maintenance event below</p>
-
-    <div class="col">
-        <form method="post">
-            <div class="form-group">
-                <label for="name">Maintenance Name</label>
-                <input type="text" class="form-control" name="name" placeholder="Maintenance name" required>
-            </div>
-            <div class="form-group">
-                <label for="description">Maintenance Description (optional)</label>
-                <textarea class="form-control" placeholder="Maintenance description" name="description" rows="3"></textarea>
-            </div>
-            <div class="form-group">
-                <label for="freq_miles">Frequency (miles)</label>
-                <input type="number" class="form-control" name="freq_miles" placeholder="How often maintenance performed in miles"
-                    min=1 required>
-            </div>
-            <div class="form-group">
-                <label for="freq_months">Frequency (months)</label>
-                <input type="number" class="form-control" name="freq_months" placeholder="How often maintenance performed in months"
-                    min=1 required>
-                <small>Maintenance will be due at whichever comes first mileage or months</small>
-            </div>
-            <hr>
-            <h5>Last time performed (optional)</h5>
-            <small>You can optionally enter the previous time this maintenance was carried out. If you do not know this
-                we will assume the maintenance schedule has previously been followed.</small>
-            <div class="form-group">
-                <label for="mileage">Date</label>
-                <input type="date" class="form-control" name="mileage">
-            </div>
-            <div class="form-group">
-                <label for="date">Mileage</label>
-                <input type="number" class="form-control" name="date"
-                    placeholder="Mileage when maintenance performed" min=1>
-            </div>
-            <div class="form-group">
-                <label for="notes">Notes</label>
-                <textarea class="form-control" placeholder="Notes" id="notes" rows="3"></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Add to Schedule</button>
-        </form>
-    </div>
+    <form method="post">
+        <div class="form-group">
+            <label for="name">Maintenance Name</label>
+            <input type="text" class="form-control" name="name" placeholder="Maintenance name" required>
+        </div>
+        <div class="form-group">
+            <label for="description">Maintenance Description (optional)</label>
+            <textarea class="form-control" placeholder="Maintenance description" name="description" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="freq_miles">Frequency (miles)</label>
+            <input type="number" class="form-control" name="freq_miles"
+                placeholder="How often maintenance performed in miles" min=1 required>
+        </div>
+        <div class="form-group">
+            <label for="freq_months">Frequency (months)</label>
+            <input type="number" class="form-control" name="freq_months"
+                placeholder="How often maintenance performed in months" min=1 required>
+            <small>Maintenance will be due at whichever comes first mileage or months</small>
+        </div>
+        <hr>
+        <h5>Last time performed (optional)</h5>
+        <small>You can optionally enter the previous time this maintenance was carried out. If you do not know this
+            we will assume the maintenance schedule has previously been followed.</small>
+        <div class="form-group">
+            <label for="mileage">Date</label>
+            <input type="date" class="form-control" name="date">
+        </div>
+        <div class="form-group">
+            <label for="date">Mileage</label>
+            <input type="number" class="form-control" name="mileage" placeholder="Mileage when maintenance performed"
+                min=1>
+        </div>
+        <div class="form-group">
+            <label for="notes">Notes</label>
+            <textarea class="form-control" placeholder="Notes" name="notes" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Add to Schedule</button>
+    </form>
 </div>
 
 {% endblock %}

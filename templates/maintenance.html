@@ -4,6 +4,48 @@
 
 {% block main %}
 
-<h1>{{ maintenance.name }}</h1>
+<h1 class="mt-3">{{ maintenance.name }}</h1>
+<p><b>Frequency (miles): </b>{{ maintenance.freq_miles }}</p>
+<p><b>Frequency (months): </b>{{ maintenance.freq_months }}</p>
+<p><b>Description: </b>{{ maintenance.description }}</p>
 
+
+<h2 class="mt-2">Log History</h2>
+{% if maintenance.logs %}
+<table class="table">
+    <thead>
+        <th>Date</th>
+        <th>Mileage</th>
+        <th>Notes</th>
+    </thead>
+    <tbody>
+        {% for log in maintenance.logs %}
+        <tr>
+            <td>{{ log.date }}</td>
+            <td>{{ log.mileage }}</td>
+            <td>{{ log.notes }}</td>
+        </tr>
+    </tbody>
+    {% endfor %}
+</table>
+{% endif %}
+<h2>New Log Entry</h2 class="mt-2">
+<div class="col">
+    <form method="post">
+        <div class="form-group">
+            <label for="mileage">Date</label>
+            <input type="date" class="form-control" placeholder="Date when maintenance performed" name="date">
+        </div>
+        <div class="form-group">
+            <label for="date">Mileage</label>
+            <input type="number" class="form-control" name="mileage" placeholder="Mileage when maintenance performed"
+                min=1>
+        </div>
+        <div class="form-group">
+            <label for="notes">Notes</label>
+            <textarea class="form-control" placeholder="Notes" name="notes" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Log</button>
+    </form>
+</div>
 {% endblock %}

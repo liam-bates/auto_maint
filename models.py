@@ -79,6 +79,8 @@ class Vehicle(db.Model):
         db.session.add(new_maintenance)
         db.session.commit()
 
+        return new_maintenance
+
     def add(self):
         """ Method to save the current vehicle object to the DB. """
         db.session.add(self)
@@ -125,7 +127,20 @@ class Maintenance(db.Model):
     description = db.Column(db.String(256))
     freq_miles = db.Column(db.Integer, nullable=True)
     freq_months = db.Column(db.Integer, nullable=True)
-    log = db.relationship('Log', cascade='all,delete', backref='maintenance')
+    logs = db.relationship('Log', cascade='all,delete', backref='maintenance')
+
+    def add_log(self, date, mileage, notes):
+        """ Add a log entry for the maintenance schedule. """
+        # Create a new maintenance object
+        new_log = Log(
+            maintenance_id=self.maintenance_id,
+            date=date,
+            mileage=mileage,
+            notes=notes)
+
+        # Write to DB
+        db.session.add(new_log)
+        db.session.commit()
 
 
 class Log(db.Model):

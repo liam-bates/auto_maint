@@ -3,13 +3,13 @@
 {% block title %}Welcome!{% endblock %}
 
 {% block main %}
-<h1>Welcome!</h1>
+<h1 class="mt-3">Welcome!</h1>
 <p>Auto Maintenance reminds you when to perform regular maintenance on your vehicle based on its recomended maintenance
     schedule.</p>
 <p>The app will email you to notify you when a maintenance event is due. This is achieved by monitoring your vehicles age
     and it's current estimated mileage</p>
 <div class="row">
-    <div class="col">
+    <div class="col-sm-6">
         <h3>Login</h3>
         <form method="post">
             <div class="form-group">
@@ -23,7 +23,7 @@
             <button type="submit" class="btn btn-primary">Login</button>
         </form>
     </div>
-    <div class="col">
+    <div class="col-sm-6">
         <h3>Create Account</h3>
         <p>No account? No problem!</p>
         <a href="/register" class="btn btn-primary" role="button">Register</a>

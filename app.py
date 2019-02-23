@@ -279,11 +279,24 @@ def add_maint(vehicle_id):
 
     # POST begins
     # Add the maintenance event for the vehicle.
-    lookup_vehicle.add_maintenance(
+    new_maintenance = lookup_vehicle.add_maintenance(
         request.form['name'], request.form['description'],
         request.form['freq_miles'], request.form['freq_months'])
 
-@app.route("/vehicle/<vehicle_id>/maintenance/<maintenance_id>", methods=['GET', 'POST'])
+    if any(
+            field is not '' for field in
+        [request.form['date'], request.form['mileage'], request.form['notes']
+         ]):
+        new_maintenance.add_log(request.form['date'], request.form['mileage'],
+                                request.form['notes'])
+
+    flash(f'{request.form["name"]} maintenance record added', 'primary')
+    return redirect("vehicle/" + vehicle_id)
+
+
+@app.route(
+    "/vehicle/<vehicle_id>/maintenance/<maintenance_id>",
+    methods=['GET', 'POST'])
 @login_required
 def maintenance(vehicle_id, maintenance_id):
     # Pull vehicle, maintenance and user reocrds from db using id
@@ -294,11 +307,22 @@ def maintenance(vehicle_id, maintenance_id):
     user = User.query.filter(User.user_id == session["user_id"]).first()
 
     # Verify the user has access to the record and that it exists
-    if not lookup_vehicle.maintenance or lookup_vehicle.user_id != session['user_id']:
+    if not lookup_vehicle.maintenance or lookup_vehicle.user_id != session[
+            'user_id']:
         flash(u'Unauthorized access to vehicle record', 'danger')
         return redirect('/home')
 
-    # Pull maintenance record from db
+    if request.method == 'POST':
+        if any(field is '' for field in [
+                request.form['date'], request.form['mileage'],
+                request.form['notes']
+        ]):
+            flash(u'Missing required field/s for new user account', 'danger')
+        else:
+            lookup_maintenance.add_log(request.form['date'],
+                                       request.form['mileage'],
+                                       request.form['notes'])
+            flash(u'New log entry added.', 'primary')
 
-    
-    return render_template("maintenance.html", maintenance=lookup_maintenance, user=user)
+    return render_template(
+        "maintenance.html", maintenance=lookup_maintenance, user=user)

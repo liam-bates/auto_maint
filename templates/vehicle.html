@@ -4,18 +4,18 @@
 
 {% block main %}
 
-<h1>{{ vehicle.vehicle_name }}</h1>
+<h1 class="mt-3">{{ vehicle.vehicle_name }}</h1>
 <div class="row">
-    <div class="col">
-        <h4>Vehicle Info</h4>
-        <p>Last reported mileage: {{ vehicle.last_odometer().reading }} miles</p>
-        <p>Estimated Current Mileage: {{ vehicle.est_mileage() }} miles</p>
-        <p>Age: {{ vehicle.age() }} years</p>
+    <div class="col-sm-6">
+        <h2 class="mt-2">Vehicle Info</h2>
+        <p><b>Last reported mileage: </b>{{ vehicle.last_odometer().reading }} miles</p>
+        <p><b>Estimated Current Mileage: </b> {{ vehicle.est_mileage() }} miles</p>
+        <p><b>Age: </b>{{ vehicle.age() }} years</p>
         <button type="button" class="btn btn btn-primary">Edit</button>
         <a class="btn btn-danger" href="/vehicle/{{ vehicle.vehicle_id }}/delete" role="button">Delete</a>
     </div>
-    <div class="col">
-        <h4>Odometer Readings</h4>
+    <div class="col-sm-6">
+        <h2 class="mt-2">Odometer Readings</h2>
         <table class="table">
             <thead>
                 <th>Date</th>
@@ -23,7 +23,6 @@
             </thead>
             <tbody>
                 {% for reading in vehicle.odo_readings %}
-
                 <tr>
                     <td>{{ reading.reading_date }}</td>
                     <td>{{ reading.reading }} miles</td>
@@ -31,40 +30,50 @@
                 {% endfor %}
             </tbody>
         </table>
+
         <form method="post">
-            <div class="form-group">
-                <label for="mileage">Current Total Mileage</label>
-                <input type="number" class="form-control" name="mileage" placeholder="Your vehicle's current mileage"
-                    min=1 required>
-                <small id="passwordHelp" class="form-text text-muted">We recommend adding a new reading every 3-6 months
-                    for better notification accuracy.</small>
+            <label for="mileage">Current Total Mileage</label>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <input type="number" class="form-control" name="mileage"
+                        placeholder="Your vehicle's current mileage" min=1 required>
+                </div>
+                <div class="form-group col-md-6">
+                    <button type="submit" class="btn btn-primary">Submit Mileage</button>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary">Submit mileage</button>
         </form>
     </div>
 </div>
-<h4>Maintenance Schedule</h4>
-{% if vehicle.maintenance %}
-<table class="table">
-    <thead>
-        <th>Task Name</th>
-        <th>Frequency (miles)</th>
-        <th>Frequency (months)</th>
-        <th>Status</th>
-    </thead>
-    <tbody>
-        {% for maintenance in vehicle.maintenance %}
-        <tr>
-            <td><a href="/vehicle/{{ vehicle.vehicle_id }}/maintenance/{{ maintenance.maintenance_id }}">{{ maintenance.name }}</a></td>
-            <td>{{ maintenance.freq_miles}} miles</td>
-            <td>{{ maintenance.freq_months }} months</td>
-            <td><button type="button" class="btn btn btn-success">Status (TBA)</button></td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>You currently do not have any scheduled maintenance for this vehicle.</p>
-{% endif %}
-<a class="btn btn-primary" href="/vehicle/{{ vehicle.vehicle_id }}/addmaint" role="button">Add to Schedule</a>
+<div class="row">
+    <div class="col-sm-12">
+        <h2 class="mt-2">Maintenance Schedule</h2>
+        {% if vehicle.maintenance %}
+        <table class="table">
+            <thead>
+                <th>Task Name</th>
+                <th scope="col" class="d-none d-sm-table-cell">Frequency (miles)</th>
+                <th scope="col" class="d-none d-sm-table-cell">Frequency (months)</th>
+                <th>Status</th>
+            </thead>
+            <tbody>
+                {% for maintenance in vehicle.maintenance %}
+                <tr>
+                    <td><a
+                            href="/vehicle/{{ vehicle.vehicle_id }}/maintenance/{{ maintenance.maintenance_id }}">{{ maintenance.name }}</a>
+                    </td>
+                    <td scope="col" class="d-none d-sm-table-cell">{{ maintenance.freq_miles}} miles</td>
+                    <td scope="col" class="d-none d-sm-table-cell">{{ maintenance.freq_months }} months</td>
+                    <td><button type="button" class="btn btn btn-success">Status (TBA)</button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>You currently do not have any scheduled maintenance for this vehicle.</p>
+        {% endif %}
+        <a class="btn btn-primary" href="/vehicle/{{ vehicle.vehicle_id }}/addmaint" role="button">Add to
+            Schedule</a>
+    </div>
+</div>
 {% endblock %}

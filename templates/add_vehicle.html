@@ -3,30 +3,27 @@
 {% block title %}Add Vehicle{% endblock %}
 
 {% block main %}
-
-<h2>Add your vehicle</h2>
-<p>Please enter your vehicles basic information below</p>
-
-<div class="row">
-    <div class="col">
-        <form method="post">
-            <div class="form-group">
-                <label for="vehicle_name">Vehicle Name</label>
-                <input type="text" class="form-control" name="vehicle_name" placeholder="Your vehicle's name" required>
-            </div>
-            <div class="form-group">
-                <label for="name">Date Manufactured</label>
-                <input type="date" class="form-control" name="date_manufactured" required>
-                <small id="nameHelp" class="form-text text-muted">This can be found within your vehicle's registration details.</small>
-            </div>
-            <div class="form-group">
-                <label for="mileage">Current Total Mileage</label>
-                <input type="number" class="form-control" name="mileage" placeholder="Your vehicle's current mileage" min=1 required>
-            </div>
-            <button type="submit" class="btn btn-primary">Add vehicle</button>
-        </form>
-    </div>
-    <div class="col"></div>
+<div class="col-sm-6">
+    <h2 class="mt-2">Add your vehicle</h2>
+    <p>Please enter your vehicles basic information below</p>
+    <form method="post">
+        <div class="form-group">
+            <label for="vehicle_name">Vehicle Name</label>
+            <input type="text" class="form-control" name="vehicle_name" placeholder="Your vehicle's name" required>
+        </div>
+        <div class="form-group">
+            <label for="name">Date Manufactured</label>
+            <input type="date" class="form-control" name="date_manufactured" required>
+            <small id="nameHelp" class="form-text text-muted">This can be found within your vehicle's registration
+                details.</small>
+        </div>
+        <div class="form-group">
+            <label for="mileage">Current Total Mileage</label>
+            <input type="number" class="form-control" name="mileage" placeholder="Your vehicle's current mileage" min=1
+                required>
+        </div>
+        <button type="submit" class="btn btn-primary">Add vehicle</button>
+    </form>
 </div>
 
 {% endblock %}
