@@ -108,6 +108,22 @@ class Vehicle(db.Model):
 
         return age
 
+    def status(self):
+
+        vehicle_status = 'Good'
+
+        for maintenance in self.maintenance:
+            if maintenance.status() == 'Overdue':
+                vehicle_status = 'Overdue'
+                break
+            if maintenance.status() == 'Maintenance Soon':
+                vehicle_status = 'Maintenance Soon'
+        
+        return vehicle_status
+            
+
+
+
 
 class Odometer(db.Model):
     """ Odometer reading for a vehicle. """
@@ -187,7 +203,7 @@ class Maintenance(db.Model):
             current_status = 'Overdue'
 
         elif days_due < 14 or miles_due < 500:
-            current_status = 'Maintenance Due'
+            current_status = 'Maintenance Soon'
         
         else:
             current_status = 'Good'

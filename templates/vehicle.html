@@ -66,7 +66,7 @@
                     <td scope="col" class="d-none d-sm-table-cell">{{ maintenance.freq_months }} months</td>
                     {% if maintenance.status() == 'Good' %}
                     <td><button type="button" class="btn btn btn-success">{{ maintenance.status() }}</button></td>
-                    {% elif maintenance.status() == 'Overdue' %}
+                    {% elif maintenance.status() == 'Maintenance Soon' %}
                     <td><button type="button" class="btn btn btn-warning">{{ maintenance.status() }}</button></td>
                     {% else %}
                     <td><button type="button" class="btn btn btn-danger">{{ maintenance.status() }}</button></td>

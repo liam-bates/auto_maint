@@ -22,7 +22,13 @@
             <td>{{ vehicle.last_odometer().reading }} miles</td>
             <td>{{ vehicle.est_mileage() }} miles</td>
             <td>{{ vehicle.age() }} years</td>
-            <td><button type="button" class="btn btn btn-success">Status (TBA)</button></td>
+            {% if vehicle.status() == 'Good' %}
+            <td><button type="button" class="btn btn btn-success">{{ vehicle.status() }}</button></td>
+            {% elif vehicle.status() == 'Maintenance Soon' %}
+            <td><button type="button" class="btn btn btn-warning">{{ vehicle.status() }}</button></td>
+            {% else %}
+            <td><button type="button" class="btn btn btn-danger">{{ vehicle.status() }}</button></td>
+            {% endif %}
         </tr>
         {% endfor %}
     </tbody>
