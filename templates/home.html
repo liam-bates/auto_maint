@@ -19,8 +19,8 @@
         {% for vehicle in vehicles %}
         <tr>
             <td><a href="/vehicle/{{ vehicle.vehicle_id }}">{{ vehicle.vehicle_name }}</a></td>
-            <td>{{ vehicle.last_odometer().reading }} miles</td>
-            <td>{{ vehicle.est_mileage() }} miles</td>
+            <td>{{ vehicle.last_odometer().reading | mileage }}</td>
+            <td>{{ vehicle.est_mileage() | mileage }}</td>
             <td>{{ vehicle.age() / 365.2524 }} years</td>
             {% if vehicle.status() == 'Good' %}
             <td><button type="button" class="btn btn btn-success">{{ vehicle.status() }}</button></td>

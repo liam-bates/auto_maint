@@ -8,8 +8,8 @@
 <div class="row">
     <div class="col-sm-6">
         <h2 class="mt-2">Vehicle Info</h2>
-        <p><b>Last reported mileage: </b>{{ vehicle.last_odometer().reading }} miles</p>
-        <p><b>Estimated Current Mileage: </b> {{ vehicle.est_mileage() }} miles</p>
+        <p><b>Last reported mileage: </b>{{ vehicle.last_odometer().reading | mileage }}</p>
+        <p><b>Estimated Current Mileage: </b> {{ vehicle.est_mileage() | mileage }}</p>
         <p><b>Date Manufactured: </b>{{ vehicle.vehicle_built }}</p>
         <p><b>Age: </b>{{ vehicle.age() / 365.2524 }} years</p>
         <button type="button" class="btn btn btn-primary">Edit</button>
@@ -26,7 +26,7 @@
                 {% for reading in vehicle.odo_readings | sort(attribute='reading_date', reverse = True) %}
                 <tr>
                     <td>{{ reading.reading_date }}</td>
-                    <td>{{ reading.reading }} miles</td>
+                    <td>{{ reading.reading | mileage }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -63,7 +63,7 @@
                     <td><a
                             href="/vehicle/{{ vehicle.vehicle_id }}/maintenance/{{ maintenance.maintenance_id }}">{{ maintenance.name }}</a>
                     </td>
-                    <td scope="col" class="d-none d-sm-table-cell">{{ maintenance.freq_miles}} miles</td>
+                    <td scope="col" class="d-none d-sm-table-cell">{{ maintenance.freq_miles | mileage }}</td>
                     <td scope="col" class="d-none d-sm-table-cell">{{ maintenance.freq_months }} months</td>
                     {% if maintenance.status() == 'Good' %}
                     <td><button type="button" class="btn btn btn-success">{{ maintenance.status() }}</button></td>

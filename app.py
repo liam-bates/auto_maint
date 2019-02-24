@@ -328,3 +328,8 @@ def maintenance(vehicle_id, maintenance_id):
 
     return render_template(
         "maintenance.html", maintenance=lookup_maintenance, user=user)
+
+@app.template_filter('mileage')
+def mileage_format(value):
+    """ Custom formatting for mileage. """
+    return "{:,} miles".format(value)
