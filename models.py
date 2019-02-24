@@ -67,6 +67,12 @@ class Vehicle(db.Model):
         """ Method to add an odometer reading """
         new_reading = Odometer(
             vehicle_id=self.vehicle_id, reading=mileage, reading_date=date)
+
+        # Find any odomete readings on the same date.
+        same_date = Odometer.query.filter(self.vehicle_id == Odometer.vehicle_id).filter(new_reading.reading_date == Odometer.reading_date).first()
+        if same_date:
+            same_date.delete()
+
         # Write to DB
         db.session.add(new_reading)
         db.session.commit()
