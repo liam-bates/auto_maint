@@ -36,16 +36,18 @@ class Vehicle(db.Model):
         Returns the current estimated mileage by looking at the last odometer
         reading and comparing it to the age of the vehicle.
         """
-        if not self.odo_readings:
+        sorted_odos = sorted(self.odo_readings, key=lambda x: x.reading_date)
+
+        if not sorted_odos:
             return 0
 
-        if len(self.odo_readings) >= 2:
-            second_last = self.odo_readings[-2]
+        if len(sorted_odos) >= 2:
+            second_last = sorted_odos[-2]
 
         else:
             second_last = Odometer(reading=0, reading_date=self.vehicle_built)
 
-        last = self.odo_readings[-1]
+        last = sorted_odos[-1]
         days_between = (last.reading_date - second_last.reading_date).days
         miles_between = last.reading - second_last.reading
         mpd = miles_between / days_between
@@ -60,7 +62,7 @@ class Vehicle(db.Model):
         # Show descending / only first
         odo = Odometer.query.filter(
             self.vehicle_id == Odometer.vehicle_id).order_by(
-                Odometer.reading_id.desc()).first()
+                Odometer.reading_date.desc()).first()
         return odo
 
     def add_odom_reading(self, mileage, date=datetime.date.today()):
@@ -165,6 +167,9 @@ class Maintenance(db.Model):
             date=date,
             mileage=mileage,
             notes=notes)
+
+        # Add the mileage as an odometer reading.
+        self.vehicle.add_odom_reading(mileage, date)
 
         # Write to DB
         db.session.add(new_log)

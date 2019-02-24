@@ -23,7 +23,7 @@
                 <th>Mileage</th>
             </thead>
             <tbody>
-                {% for reading in vehicle.odo_readings %}
+                {% for reading in vehicle.odo_readings | sort(attribute='reading_date', reverse = True) %}
                 <tr>
                     <td>{{ reading.reading_date }}</td>
                     <td>{{ reading.reading }} miles</td>
@@ -36,8 +36,8 @@
             <label for="mileage">Current Mileage</label>
             <div class="form-row">
                 <div class="form-group col-md-6">
-                    <input type="number" class="form-control" name="mileage"
-                        placeholder="Enter current mileage" min=1 required>
+                    <input type="number" class="form-control" name="mileage" placeholder="Enter current mileage" min=1
+                        required>
                 </div>
                 <div class="form-group col-md-6">
                     <button type="submit" class="btn btn-primary">Add Mileage</button>
@@ -58,7 +58,7 @@
                 <th>Status</th>
             </thead>
             <tbody>
-                {% for maintenance in vehicle.maintenance %}
+                {% for maintenance in vehicle.maintenance | sort(attribute='name') %}
                 <tr>
                     <td><a
                             href="/vehicle/{{ vehicle.vehicle_id }}/maintenance/{{ maintenance.maintenance_id }}">{{ maintenance.name }}</a>
