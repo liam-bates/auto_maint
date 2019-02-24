@@ -289,10 +289,9 @@ def add_maint(vehicle_id):
          ]):
         new_maintenance.add_log(request.form['date'], request.form['mileage'],
                                 request.form['notes'])
-    
+
     else:
         new_maintenance.est_log()
-
 
     flash(f'{request.form["name"]} maintenance record added', 'primary')
     return redirect("vehicle/" + vehicle_id)
@@ -303,6 +302,8 @@ def add_maint(vehicle_id):
     methods=['GET', 'POST'])
 @login_required
 def maintenance(vehicle_id, maintenance_id):
+    """ Shows a details of a particular scheduled maintenance event and allows
+    the user to create log entries for that task when performed. """
     # Pull vehicle, maintenance and user reocrds from db using id
     lookup_vehicle = Vehicle.query.filter(
         Vehicle.vehicle_id == vehicle_id).first()

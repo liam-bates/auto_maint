@@ -68,8 +68,10 @@ class Vehicle(db.Model):
         new_reading = Odometer(
             vehicle_id=self.vehicle_id, reading=mileage, reading_date=date)
 
-        # Find any odomete readings on the same date.
-        same_date = Odometer.query.filter(self.vehicle_id == Odometer.vehicle_id).filter(new_reading.reading_date == Odometer.reading_date).first()
+        # Find any odometer reading on the same date and delete it.
+        same_date = Odometer.query.filter(
+            self.vehicle_id == Odometer.vehicle_id).filter(
+                new_reading.reading_date == Odometer.reading_date).first()
         if same_date:
             same_date.delete()
 
@@ -113,6 +115,8 @@ class Vehicle(db.Model):
         return age
 
     def status(self):
+        """ Shows the status of the vehicle based on all of it's scheduled
+        maintenance tasks. """
 
         vehicle_status = 'Good'
 
@@ -167,9 +171,9 @@ class Maintenance(db.Model):
         db.session.commit()
 
     def est_log(self):
-        """ Generate a log entry for the maintenance schedule assuming 
-        that the activity was undertaken in the past in accordance with the 
-        maintenance schedule. """
+        """ Generate a log entry for the maintenance schedule assuming that the
+        activity was undertaken in the past in accordance with the maintenance
+        schedule. """
 
         last_odo = self.vehicle.last_odometer().reading
         freq_days = (self.freq_months / 12) * 365.2524
@@ -190,49 +194,66 @@ class Maintenance(db.Model):
             db.session.commit()
 
     def miles_until_due(self):
-        #
-        if not self.logs:
+        """ Shows the total miles based on current estimated mileage until
+        maintenance task due. """
+
+        # Calculated the miles since task last performed.
+        miles_since = self.vehicle.est_mileage()
+        if self.logs:
+            miles_since -= self.logs[-1].mileage
+
+        # Calculate how many miles until due.
+        miles_due = self.freq_miles - miles_since
+
+        # If overdue show value as 0 instead of negative number
+        if miles_due < 0:
             miles_due = 0
-        else:
-            last_log = self.logs[-1]
 
-            miles_due = self.freq_miles - (
-                self.vehicle.est_mileage() - last_log.mileage)
-
-            if miles_due < 0:
-                miles_due = 0
-
+        # Return value
         return miles_due
 
     def days_until_due(self):
-        #
-        if not self.logs:
-            days_due = 0
+        """ Shows the total dauys until maintenance task due. """
+
+        # If a previous log entry count days from there, otherwise use vehicle's
+        # manufactured date
+        if self.logs:
+            days_since = datetime.date.today() - self.logs[-1].date
         else:
-            last_log = self.logs[-1]
+            days_since = datetime.date.today() - self.vehicle.vehicle_built
 
-            days_due = ((self.freq_months / 12) * 365.2524) - (
-                datetime.date.today() - last_log.date).days
+        # Convert frequency to days and compare
+        days_due = ((self.freq_months / 12) * 365.2524) - days_since.days
 
-            if days_due < 0:
-                days_due = 0
+        # If overdue return 0 as opposed to negative
+        if days_due < 0:
+            days_due = 0
 
+        # Return value as an integer.
         return int(days_due)
 
     def status(self):
+        """
+        Check the status of the maintenance task.
 
+        Returns 'Good' if not due within 500 miles or 14 days.
+        Returns 'Maintenance Soon' if due within 500 miles or 14 days.
+        Returns 'Overdue' if due within 0 miles or 0 days.
+        """
+        # Check the number of days and miles until due.
         days_due = self.days_until_due()
         miles_due = self.miles_until_due()
 
+        # Check if Overdue
         if days_due == 0 or miles_due == 0:
             current_status = 'Overdue'
-
+        # Check if Soon
         elif days_due < 14 or miles_due < 500:
             current_status = 'Maintenance Soon'
-
+        # Otherwise treat as Good
         else:
             current_status = 'Good'
-
+        # Return finding
         return current_status
 
 
