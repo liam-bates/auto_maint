@@ -406,7 +406,9 @@ def delete_log(log_id):
     else:
         flash('Unauthorized access to log entry.', 'danger')
 
-    return redirect(f'/vehicle/{del_log.maintenance.vehicle_id}')
+    return redirect(
+        f'/vehicle/{del_log.maintenance.vehicle_id}/maintenance/{del_log.maintenance_id}'
+    )
 
 
 @app.route("/vehicle/edit/<vehicle_id>", methods=['POST'])

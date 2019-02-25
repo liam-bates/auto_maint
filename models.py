@@ -162,7 +162,7 @@ class Maintenance(db.Model):
     def add_log(self, date, mileage, notes):
         """ Add a log entry for the maintenance schedule. """
 
-        # Create a new maintenance object with user input
+        # Create a new m;aintenance object with user input
         new_log = Log(
             maintenance_id=self.maintenance_id,
             date=date,
@@ -204,8 +204,9 @@ class Maintenance(db.Model):
 
         # Calculated the miles since task last performed.
         miles_since = self.vehicle.est_mileage()
-        if self.logs:
-            miles_since -= self.logs[-1].mileage
+        sorted_logs = sorted(self.logs, key=lambda x: x.date)
+        if sorted_logs:
+            miles_since -= sorted_logs[-1].mileage
 
         # Calculate how many miles until due.
         miles_due = self.freq_miles - miles_since
@@ -222,8 +223,11 @@ class Maintenance(db.Model):
 
         # If a previous log entry count days from there, otherwise use vehicle's
         # manufactured date
-        if self.logs:
-            days_since = datetime.date.today() - self.logs[-1].date
+        sorted_logs = sorted(self.logs, key=lambda x: x.date)
+
+
+        if sorted_logs:
+            days_since = datetime.date.today() - sorted_logs[-1].date
         else:
             days_since = datetime.date.today() - self.vehicle.vehicle_built
 
