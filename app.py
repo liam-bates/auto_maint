@@ -336,6 +336,16 @@ def mileage_format(value):
     return "{:,} miles".format(value)
 
 
+@app.template_filter('age')
+def age_format(value):
+    """ Custom formatting for age, converting from days to years. """
+
+    value = value / 365.2524
+
+
+    return "{:,.2f} years".format(value)
+
+
 @app.route("/odo/<reading_id>/delete", methods=['GET'])
 @login_required
 def delete_odometer(reading_id):

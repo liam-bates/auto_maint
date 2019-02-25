@@ -21,7 +21,7 @@
             <td><a href="/vehicle/{{ vehicle.vehicle_id }}">{{ vehicle.vehicle_name }}</a></td>
             <td scope="col" class="d-none d-md-table-cell">{{ vehicle.last_odometer().reading | mileage }}</td>
             <td>{{ vehicle.est_mileage() | mileage }}</td>
-            <td scope="col" class="d-none d-md-table-cell">{{ vehicle.age() / 365.2524 }} years</td>
+            <td scope="col" class="d-none d-md-table-cell">{{ vehicle.age() | age }}</td>
             {% if vehicle.status() == 'Good' %}
             <td><button type="button" class="btn btn btn-success">{{ vehicle.status() }}</button></td>
             {% elif vehicle.status() == 'Soon' %}
