@@ -422,13 +422,15 @@ def edit_vehicle(vehicle_id):
         ed_vehicle = Vehicle.query.filter(
             Vehicle.vehicle_id == vehicle_id).first()
 
-        # Update fields.
-        ed_vehicle.vehicle_name = request.form['vehicle_name']
-        ed_vehicle.vehicle_built = request.form['date_manufactured']
+        # Ensure requesting user owns the record
+        if ed_vehicle.user_id == session["user_id"]:
+            # Update fields.
+            ed_vehicle.vehicle_name = request.form['vehicle_name']
+            ed_vehicle.vehicle_built = request.form['date_manufactured']
 
-        flash(u'Vehicle information updated.', 'primary')
+            flash(u'Vehicle information updated.', 'primary')
 
-        db.session.commit()
+            db.session.commit()
 
         return redirect(f'/vehicle/{vehicle_id}')
 
@@ -450,11 +452,13 @@ def edit_maintenance(maintenance_id):
         ed_maintenance = Maintenance.query.filter(
             Maintenance.maintenance_id == maintenance_id).first()
 
-        # Update fields.
-        ed_maintenance.name = request.form['name']
-        ed_maintenance.description = request.form['description']
-        ed_maintenance.freq_miles = request.form['freq_miles']
-        ed_maintenance.freq_months = request.form['freq_months']
+        # Ensure requesting user owns the record
+        if ed_maintenance.vehicle.user_id == session["user_id"]:
+            # Update fields.
+            ed_maintenance.name = request.form['name']
+            ed_maintenance.description = request.form['description']
+            ed_maintenance.freq_miles = request.form['freq_miles']
+            ed_maintenance.freq_months = request.form['freq_months']
 
         flash(u'Maintenance information updated.', 'primary')
 
