@@ -10,6 +10,7 @@
 <p><b>Miles until due: </b>{{ maintenance.miles_until_due() | mileage }}</p>
 <p><b>Days until due: </b>{{ maintenance.days_until_due() | mileage }}</p>
 <p><b>Description: </b>{{ maintenance.description }}</p>
+<a class="btn btn-secondary" href="/vehicle/{{ maintenance.vehicle_id }}" role="button">Back</a>
 <button class="btn btn-primary" data-toggle="modal" data-target="#EditModal">Edit</a></button>
 <button class="btn btn-danger" data-toggle="modal" data-target="#DeleteModal">Delete</a></button>
 
