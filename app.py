@@ -6,7 +6,7 @@ from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from models import Vehicle, User, Maintenance, db
+from models import Log, Maintenance, Odometer, User, Vehicle, db
 
 app = Flask(__name__)
 
@@ -329,7 +329,72 @@ def maintenance(vehicle_id, maintenance_id):
     return render_template(
         "maintenance.html", maintenance=lookup_maintenance, user=user)
 
+
 @app.template_filter('mileage')
 def mileage_format(value):
     """ Custom formatting for mileage. """
     return "{:,} miles".format(value)
+
+
+@app.route("/odo/<reading_id>/delete", methods=['GET'])
+@login_required
+def delete_odometer(reading_id):
+    """Takes a URL and deletes the odometer, by the ID provided"""
+
+    # Query the db for a matching vehicle
+    del_odom = Odometer.query.filter_by(reading_id=reading_id).first()
+
+    # Test whatever was returned to see if the vehicle is owned by the user
+    if del_odom.vehicle.user_id == session["user_id"]:
+        # Test if it is the last odometer reading.
+        if len(del_odom.vehicle.odo_readings) <= 1:
+            flash(
+                f'Cannot delete last odomter reading. Add another before attempting to remove the last reading.',
+                'danger')
+        else:
+            del_odom.delete()
+            flash(f'Odometer reading deleted.', 'primary')
+    # If not flash an error
+    else:
+        flash('Unauthorized access to odometer record.', 'primary')
+
+    return redirect(f'/vehicle/{del_odom.vehicle.vehicle_id}')
+
+
+@app.route("/maintenance/<maintenance_id>/delete", methods=['GET'])
+@login_required
+def delete_maintenance(maintenance_id):
+    """Takes a URL and deletes the vehicle, by the ID provided"""
+
+    # Query the db for a matching vehicle
+    del_maintenance = Maintenance.query.filter_by(
+        maintenance_id=maintenance_id).first()
+
+    # Test whatever was returned to see if the vehicle is owned by the user
+    if del_maintenance.vehicle.user_id == session["user_id"]:
+        del_maintenance.delete()
+        flash(f'{del_maintenance.name} maintenance task deleted.', 'primary')
+    # If not flash an error
+    else:
+        flash('Unauthorized access to maintenance record.', 'primary')
+
+    return redirect(f'/vehicle/{del_maintenance.vehicle_id}')
+
+
+@app.route("/log/<log_id>/delete", methods=['GET'])
+@login_required
+def delete_log(log_id):
+    """Takes a URL and deletes the log entry, by the ID provided"""
+
+    # Query the db for a matching vehicle
+    del_log = Log.query.filter_by(log_id=log_id).first()
+
+    # Test whatever was returned to see if the vehicle is owned by the user
+    if del_log.maintenance.vehicle.user_id == session["user_id"]:
+        del_log.delete()
+        flash(f'Log entry deleted.', 'primary')
+    # If not flash an error
+    else:
+        flash('Unauthorized access to log entry.', 'danger')
+
+    return redirect(f'/vehicle/{del_log.maintenance.vehicle_id}')

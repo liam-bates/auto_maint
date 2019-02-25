@@ -144,6 +144,7 @@ class Odometer(db.Model):
     def delete(self):
         """ Method to delete the odomter reading. """
         db.session.delete(self)
+        db.session.commit()
 
 
 class Maintenance(db.Model):
@@ -259,6 +260,11 @@ class Maintenance(db.Model):
             current_status = 'Good'
         # Return finding
         return current_status
+    
+    def delete(self):
+        """ Method to delete the maintenance task. """
+        db.session.delete(self)
+        db.session.commit()
 
 
 class Log(db.Model):
@@ -270,3 +276,8 @@ class Log(db.Model):
     date = db.Column(db.Date, nullable=False)
     mileage = db.Column(db.Integer, nullable=True)
     notes = db.Column(db.String(256))
+
+    def delete(self):
+        """ Method to delete the log. """
+        db.session.delete(self)
+        db.session.commit()
