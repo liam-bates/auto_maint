@@ -12,7 +12,7 @@
         <p><b>Estimated Current Mileage: </b> {{ vehicle.est_mileage() | mileage }}</p>
         <p><b>Date Manufactured: </b>{{ vehicle.vehicle_built }}</p>
         <p><b>Age: </b>{{ vehicle.age() | age }}</p>
-        <button type="button" class="btn btn btn-primary">Edit</button>
+        <button class="btn btn-primary" data-toggle="modal" data-target="#EditModal">Edit</a></button>
         <button class="btn btn-danger" data-toggle="modal" data-target="#DeleteModal">Delete</a></button>
     </div>
 
@@ -35,6 +35,37 @@
         </div>
     </div>
 
+    <div class="modal fade" id="EditModal" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Edit Vehicle</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="/vehicle/edit/{{ vehicle.vehicle_id }}" >
+                        <div class="form-group">
+                            <label for="vehicle_name">Vehicle Name</label>
+                            <input type="text" class="form-control" name="vehicle_name"
+                                value="{{ vehicle.vehicle_name }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Date Manufactured</label>
+                            <input type="date" class="form-control" name="date_manufactured"
+                                value="{{ vehicle.vehicle_built }}" required>
+                            <small id="nameHelp" class="form-text text-muted">This can be found within your vehicle's
+                                registration details.</small>
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Edit Vehicle</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="col-md-6">
         <h2 class="mt-2">Odometer Readings</h2>
         <table class="table">
@@ -46,7 +77,8 @@
                 {% for reading in vehicle.odo_readings | sort(attribute='reading_date', reverse = True) %}
                 <tr>
                     <td>{{ reading.reading_date }}</td>
-                    <td>{{ reading.reading | mileage }}<a class="close" href="/odo/{{ reading.reading_id }}/delete">&times;</a></td>
+                    <td>{{ reading.reading | mileage }}<a class="close"
+                            href="/odo/{{ reading.reading_id }}/delete">&times;</a></td>
                 </tr>
                 {% endfor %}
             </tbody>

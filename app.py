@@ -342,7 +342,6 @@ def age_format(value):
 
     value = value / 365.2524
 
-
     return "{:,.2f} years".format(value)
 
 
@@ -408,3 +407,59 @@ def delete_log(log_id):
         flash('Unauthorized access to log entry.', 'danger')
 
     return redirect(f'/vehicle/{del_log.maintenance.vehicle_id}')
+
+
+@app.route("/vehicle/edit/<vehicle_id>", methods=['POST'])
+@login_required
+def edit_vehicle(vehicle_id):
+
+    # If a POST request check that all fields completed, otherwise flash error
+    if request.form['vehicle_name'] == '' or request.form[
+            'date_manufactured'] == '':
+        flash(u'Missing required field/s when editing vehicle.', 'danger')
+    else:
+        # Pull vehicle from db using id
+        ed_vehicle = Vehicle.query.filter(
+            Vehicle.vehicle_id == vehicle_id).first()
+
+        # Update fields.
+        ed_vehicle.vehicle_name = request.form['vehicle_name']
+        ed_vehicle.vehicle_built = request.form['date_manufactured']
+
+        flash(u'Vehicle information updated.', 'primary')
+
+        db.session.commit()
+
+        return redirect(f'/vehicle/{vehicle_id}')
+
+
+@app.route("/maintenance/edit/<maintenance_id>", methods=['POST'])
+@login_required
+def edit_maintenance(maintenance_id):
+
+    # If a POST request check that all fields completed, otherwise flash error
+
+    if any(field is '' for field in [
+            request.form['name'], request.form['freq_miles'],
+            request.form['freq_months']
+    ]):
+        flash(u'Missing required field/s when editing maintenance task.',
+              'danger')
+    else:
+        # Pull vehicle from db using id
+        ed_maintenance = Maintenance.query.filter(
+            Maintenance.maintenance_id == maintenance_id).first()
+
+        # Update fields.
+        ed_maintenance.name = request.form['name']
+        ed_maintenance.description = request.form['description']
+        ed_maintenance.freq_miles = request.form['freq_miles']
+        ed_maintenance.freq_months = request.form['freq_months']
+
+        flash(u'Maintenance information updated.', 'primary')
+
+        db.session.commit()
+
+        return redirect(
+            f'/vehicle/{ed_maintenance.vehicle_id}/maintenance/{ed_maintenance.maintenance_id}'
+        )
