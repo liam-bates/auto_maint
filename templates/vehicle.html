@@ -6,14 +6,14 @@
 
 <h1 class="mt-3">{{ vehicle.vehicle_name }}</h1>
 <div class="row">
-    <div class="col-sm-6">
+    <div class="col-md-6">
         <h2 class="mt-2">Vehicle Info</h2>
         <p><b>Last reported mileage: </b>{{ vehicle.last_odometer().reading | mileage }}</p>
         <p><b>Estimated Current Mileage: </b> {{ vehicle.est_mileage() | mileage }}</p>
         <p><b>Date Manufactured: </b>{{ vehicle.vehicle_built }}</p>
         <p><b>Age: </b>{{ vehicle.age() / 365.2524 }} years</p>
         <button type="button" class="btn btn btn-primary">Edit</button>
-        <button class="btn btn-danger" data-toggle="DeleteModal" data-target="#myModal">Delete</a>
+        <button class="btn btn-danger" data-toggle="modal" data-target="#DeleteModal">Delete</a>
     </div>
 
     <div class="modal fade" id="DeleteModal" role="dialog">
@@ -21,21 +21,21 @@
             <!-- Modal content-->
             <div class="modal-content">
                 <div class="modal-header">
+                    <h4 class="modal-title">Delete Vehicle</h4>
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">href="/vehicle/{{ vehicle.vehicle_id }}/delete"</h4>
                 </div>
                 <div class="modal-body">
-                    <p>Some text in the modal.</p>
-                    <button class="btn btn-danger" data-toggle="DeleteModal" data-target="#myModal">Delete</a>
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <p>Are you sure you want to delete the vehicle?</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <a class="btn btn-danger" href="/vehicle/{{ vehicle.vehicle_id }}/delete">Delete</a>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-sm-6">
+
+    <div class="col-md-6">
         <h2 class="mt-2">Odometer Readings</h2>
         <table class="table">
             <thead>
@@ -46,7 +46,7 @@
                 {% for reading in vehicle.odo_readings | sort(attribute='reading_date', reverse = True) %}
                 <tr>
                     <td>{{ reading.reading_date }}</td>
-                    <td>{{ reading.reading | mileage }}</td>
+                    <td>{{ reading.reading | mileage }}<button type="button" class="close" data-dismiss="modal">&times;</button></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -86,11 +86,14 @@
                     <td scope="col" class="d-none d-sm-table-cell">{{ maintenance.freq_miles | mileage }}</td>
                     <td scope="col" class="d-none d-sm-table-cell">{{ maintenance.freq_months }} months</td>
                     {% if maintenance.status() == 'Good' %}
-                    <td><button type="button" class="btn btn btn-success">{{ maintenance.status() }}</button></td>
-                    {% elif maintenance.status() == 'Maintenance Soon' %}
-                    <td><button type="button" class="btn btn btn-warning">{{ maintenance.status() }}</button></td>
+                    <td><button type="button" class="btn btn btn-success">{{ maintenance.status() }}</button>
+                    </td>
+                    {% elif maintenance.status() == 'Soon' %}
+                    <td><button type="button" class="btn btn btn-warning">{{ maintenance.status() }}</button>
+                    </td>
                     {% else %}
-                    <td><button type="button" class="btn btn btn-danger">{{ maintenance.status() }}</button></td>
+                    <td><button type="button" class="btn btn btn-danger">{{ maintenance.status() }}</button>
+                    </td>
                     {% endif %}
                 </tr>
                 {% endfor %}

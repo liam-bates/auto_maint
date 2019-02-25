@@ -126,8 +126,8 @@ class Vehicle(db.Model):
             if maintenance.status() == 'Overdue':
                 vehicle_status = 'Overdue'
                 break
-            if maintenance.status() == 'Maintenance Soon':
-                vehicle_status = 'Maintenance Soon'
+            if maintenance.status() == 'Soon':
+                vehicle_status = 'Soon'
 
         return vehicle_status
 
@@ -241,7 +241,7 @@ class Maintenance(db.Model):
         Check the status of the maintenance task.
 
         Returns 'Good' if not due within 500 miles or 14 days.
-        Returns 'Maintenance Soon' if due within 500 miles or 14 days.
+        Returns 'Soon' if due within 500 miles or 14 days.
         Returns 'Overdue' if due within 0 miles or 0 days.
         """
         # Check the number of days and miles until due.
@@ -253,7 +253,7 @@ class Maintenance(db.Model):
             current_status = 'Overdue'
         # Check if Soon
         elif days_due < 14 or miles_due < 500:
-            current_status = 'Maintenance Soon'
+            current_status = 'Soon'
         # Otherwise treat as Good
         else:
             current_status = 'Good'
