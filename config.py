@@ -2,42 +2,34 @@
 import os
 
 from flask import Flask
-from flask_heroku import Heroku
 from flask_session import Session
 
-from models import db
+from models import DB
 
-app = Flask(__name__)
+APP = Flask(__name__)
 
-heroku = Heroku(app)
 
 # Iniate DB / SQLAlchemy
-if os.environ['DATABASE_URL'] == None:
-    app.config[
-    "SQLALCHEMY_DATABASE_URI"] = "postgresql://liambates:test@localhost/auto"
-
-else:
-    app.config[
-    "SQLALCHEMY_DATABASE_URI"] = os.environ['DATABASE_URL']
-
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+APP.config["SQLALCHEMY_DATABASE_URI"] = os.environ['DATABASE_URL']
+APP.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Initiate session tracking type and create the sessions table
-app.config["SESSION_TYPE"] = "sqlalchemy"
-session = Session(app)
-session.app.session_interface.db.create_all()
+APP.config["SESSION_TYPE"] = "sqlalchemy"
+SESSION = Session(APP)
+SESSION.app.session_interface.db.create_all()
 
 # Link the Flask app with the database (no Flask app is actually being run yet).
-db.init_app(app)
+DB.init_app(APP)
 
 # Initiate flask_session
-session = Session(app)
+SESSION = Session(APP)
 
 def main():
+    """ Execute main script to initiate DB. """
     # Create tables based on each table definition in `models`
-    db.create_all()
+    DB.create_all()
 
 if __name__ == "__main__":
     # Allows for command line interaction with Flask application
-    with app.app_context():
+    with APP.app_context():
         main()

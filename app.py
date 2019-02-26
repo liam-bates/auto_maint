@@ -1,24 +1,23 @@
 """Web app to save maintenance schedule of a users vehicle"""
 import os
-
 from functools import wraps
 
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from models import Log, Maintenance, Odometer, User, Vehicle, db
+from models import DB, Log, Maintenance, Odometer, User, Vehicle
 
-app = Flask(__name__)
+APP = Flask(__name__)
 
 # Iniate DB / SQLAlchemy
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ['DATABASE_URL']
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db.init_app(app)
+APP.config["SQLALCHEMY_DATABASE_URI"] = os.environ['DATABASE_URL']
+APP.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+DB.init_app(APP)
 
 # Initiate session tracking type
-app.config["SESSION_TYPE"] = "sqlalchemy"
-Session(app)
+APP.config["SESSION_TYPE"] = "sqlalchemy"
+Session(APP)
 
 
 def login_required(f):
@@ -37,7 +36,7 @@ def login_required(f):
     return decorated_function
 
 
-@app.route('/', methods=['GET', 'POST'])
+@APP.route('/', methods=['GET', 'POST'])
 def index():
     """Index route"""
     # If a GET request
@@ -74,7 +73,7 @@ def index():
                     if user and user.failed_logins >= 5:
                         user.blocked = True
                     # Commit to DB
-                    db.session.commit()
+                    DB.session.commit()
                     # Return error
                     flash(u'Incorrect username and/or password provided',
                           'danger')
@@ -85,7 +84,7 @@ def index():
                     # Reset failed login attempts
                     user.failed_logins = 0
                     # Commit to DB
-                    db.session.commit()
+                    DB.session.commit()
                     # Direct to home landing page
                     return redirect('/home')
 
@@ -93,7 +92,7 @@ def index():
     return redirect('/')
 
 
-@app.route('/register', methods=['GET', 'POST'])
+@APP.route('/register', methods=['GET', 'POST'])
 def register():
     """ Registration page to allow users to create an account on the app. """
 
@@ -125,9 +124,9 @@ def register():
                         request.form['password']))
 
                 # Add to DB session
-                db.session.add(user)
+                DB.session.add(user)
                 # Commit to the DB
-                db.session.commit()
+                DB.session.commit()
 
                 # Obtain new user model from the db
                 user = User.query.filter(
@@ -135,7 +134,7 @@ def register():
 
                 # Start a new user session
                 session["user_id"] = user.user_id
-                db.session.commit()
+                DB.session.commit()
 
                 # Redirect to the vehicle landing page
                 return redirect('/home')
@@ -143,7 +142,7 @@ def register():
     return redirect('/register')
 
 
-@app.route('/home', methods=['GET', 'POST'])
+@APP.route('/home', methods=['GET', 'POST'])
 @login_required
 def home():
     """ Home landing page for users. Showing a table of their vehicles """
@@ -156,7 +155,7 @@ def home():
     return render_template("home.html", vehicles=vehicles, user=user)
 
 
-@app.route('/addvehicle', methods=['GET', 'POST'])
+@APP.route('/addvehicle', methods=['GET', 'POST'])
 @login_required
 def add_vehicle():
     """ Simple page to allow user to create a new vehicle in the app. """
@@ -188,7 +187,7 @@ def add_vehicle():
     return redirect('/home')
 
 
-@app.route('/logout', methods=['GET'])
+@APP.route('/logout', methods=['GET'])
 @login_required
 def logout():
     """Log user out"""
@@ -200,7 +199,7 @@ def logout():
     return redirect("/")
 
 
-@app.route("/vehicle/<vehicle_id>/delete", methods=['GET'])
+@APP.route("/vehicle/<vehicle_id>/delete", methods=['GET'])
 @login_required
 def delete_vehicle(vehicle_id):
     """Takes a URL and deletes the vehicle, by the ID provided"""
@@ -220,7 +219,7 @@ def delete_vehicle(vehicle_id):
     return redirect('/home')
 
 
-@app.route("/vehicle/<vehicle_id>", methods=['GET', 'POST'])
+@APP.route("/vehicle/<vehicle_id>", methods=['GET', 'POST'])
 @login_required
 def vehicle(vehicle_id):
     """Provides an overview of a vehicle record. Allows editing and deletion."""
@@ -247,9 +246,8 @@ def vehicle(vehicle_id):
                 flash(f'Mileage reading added.', 'primary')
             # Otherwise return an error
             else:
-                flash(
-                    f'Unable to add mileage as it is lower than a previous reading.',
-                    'danger')
+                flash('Unable to add mileage as it is lower than a previous '\
+                    'reading.', 'danger')
 
     # Query DB for user's info
     user = User.query.filter(User.user_id == session["user_id"]).first()
@@ -257,7 +255,7 @@ def vehicle(vehicle_id):
     return render_template('vehicle.html', vehicle=lookup_vehicle, user=user)
 
 
-@app.route("/vehicle/<vehicle_id>/addmaint", methods=['GET', 'POST'])
+@APP.route("/vehicle/<vehicle_id>/addmaint", methods=['GET', 'POST'])
 @login_required
 def add_maint(vehicle_id):
     """Allow user to add a maintenance schedule event."""
@@ -297,7 +295,7 @@ def add_maint(vehicle_id):
     return redirect("vehicle/" + vehicle_id)
 
 
-@app.route(
+@APP.route(
     "/vehicle/<vehicle_id>/maintenance/<maintenance_id>",
     methods=['GET', 'POST'])
 @login_required
@@ -345,9 +343,9 @@ def maintenance(vehicle_id, maintenance_id):
 
             # If illogical flash error, otherwise add the new log with odometer
             if not logical:
-                flash(
-                    u'Unable to create new log as listed mileage does not correspond with existing odometer readings. Check odometer readings.',
-                    'danger')
+                flash('Unable to create new log as listed mileage does not '\
+                'correspond with existing odometer readings. Check odometer '\
+                'readings.', 'danger')
             else:
                 lookup_maintenance.add_log(request.form['date'],
                                            request.form['mileage'],
@@ -358,13 +356,13 @@ def maintenance(vehicle_id, maintenance_id):
         "maintenance.html", maintenance=lookup_maintenance, user=user)
 
 
-@app.template_filter('mileage')
+@APP.template_filter('mileage')
 def mileage_format(value):
     """ Custom formatting for mileage. """
     return "{:,} miles".format(value)
 
 
-@app.template_filter('age')
+@APP.template_filter('age')
 def age_format(value):
     """ Custom formatting for age, converting from days to years. """
 
@@ -373,7 +371,7 @@ def age_format(value):
     return "{:,.2f} years".format(value)
 
 
-@app.route("/odo/<reading_id>/delete", methods=['GET'])
+@APP.route("/odo/<reading_id>/delete", methods=['GET'])
 @login_required
 def delete_odometer(reading_id):
     """Takes a URL and deletes the odometer, by the ID provided"""
@@ -385,9 +383,8 @@ def delete_odometer(reading_id):
     if del_odom.vehicle.user_id == session["user_id"]:
         # Test if it is the last odometer reading.
         if len(del_odom.vehicle.odo_readings) <= 1:
-            flash(
-                f'Cannot delete last odomter reading. Add another before attempting to remove the last reading.',
-                'danger')
+            flash('Cannot delete last odomter reading. Add another before '\
+                'attempting to remove the last reading.', 'danger')
         else:
             del_odom.delete()
             flash(f'Odometer reading deleted.', 'primary')
@@ -398,7 +395,7 @@ def delete_odometer(reading_id):
     return redirect(f'/vehicle/{del_odom.vehicle.vehicle_id}')
 
 
-@app.route("/maintenance/<maintenance_id>/delete", methods=['GET'])
+@APP.route("/maintenance/<maintenance_id>/delete", methods=['GET'])
 @login_required
 def delete_maintenance(maintenance_id):
     """Takes a URL and deletes the vehicle, by the ID provided"""
@@ -418,7 +415,7 @@ def delete_maintenance(maintenance_id):
     return redirect(f'/vehicle/{del_maintenance.vehicle_id}')
 
 
-@app.route("/log/<log_id>/delete", methods=['GET'])
+@APP.route("/log/<log_id>/delete", methods=['GET'])
 @login_required
 def delete_log(log_id):
     """Takes a URL and deletes the log entry, by the ID provided"""
@@ -434,15 +431,14 @@ def delete_log(log_id):
     else:
         flash('Unauthorized access to log entry.', 'danger')
 
-    return redirect(
-        f'/vehicle/{del_log.maintenance.vehicle_id}/maintenance/{del_log.maintenance_id}'
-    )
+    return redirect(f'/vehicle/{del_log.maintenance.vehicle_id}'\
+        '/maintenance/{del_log.maintenance_id}')
 
 
-@app.route("/vehicle/edit/<vehicle_id>", methods=['POST'])
+@APP.route("/vehicle/edit/<vehicle_id>", methods=['POST'])
 @login_required
 def edit_vehicle(vehicle_id):
-
+    """ Allows for the editing of a vehicle's attributes using POST method. """
     # If a POST request check that all fields completed, otherwise flash error
     if request.form['vehicle_name'] == '' or request.form[
             'date_manufactured'] == '':
@@ -460,15 +456,15 @@ def edit_vehicle(vehicle_id):
 
             flash(u'Vehicle information updated.', 'primary')
 
-            db.session.commit()
+            DB.session.commit()
 
         return redirect(f'/vehicle/{vehicle_id}')
 
 
-@app.route("/maintenance/edit/<maintenance_id>", methods=['POST'])
+@APP.route("/maintenance/edit/<maintenance_id>", methods=['POST'])
 @login_required
 def edit_maintenance(maintenance_id):
-
+    """ Allows the editing of maintenance tasks via POST method. """
     # If a POST request check that all fields completed, otherwise flash error
 
     if any(field is '' for field in [
@@ -492,8 +488,7 @@ def edit_maintenance(maintenance_id):
 
         flash(u'Maintenance information updated.', 'primary')
 
-        db.session.commit()
+        DB.session.commit()
 
-        return redirect(
-            f'/vehicle/{ed_maintenance.vehicle_id}/maintenance/{ed_maintenance.maintenance_id}'
-        )
+        return redirect(f'/vehicle/{ed_maintenance.vehicle_id}/maintenance/'\
+            '{ed_maintenance.maintenance_id}')

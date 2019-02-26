@@ -3,32 +3,32 @@ import datetime
 
 from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy()
+DB = SQLAlchemy()
 
 
 # Define an object of a user within the context of the DB
-class User(db.Model):
+class User(DB.Model):
     """User of the website"""
     __tablename__ = "users"
-    user_id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(256), unique=True, nullable=False)
-    password_hash = db.Column(db.String(93), nullable=False)
-    name = db.Column(db.String(128), nullable=False)
-    failed_logins = db.Column(db.SmallInteger, default=0, nullable=False)
-    blocked = db.Column(db.Boolean, default=False)
-    vehicles = db.relationship('Vehicle', cascade='all,delete', backref='user')
+    user_id = DB.Column(DB.Integer, primary_key=True)
+    email = DB.Column(DB.String(256), unique=True, nullable=False)
+    password_hash = DB.Column(DB.String(93), nullable=False)
+    name = DB.Column(DB.String(128), nullable=False)
+    failed_logins = DB.Column(DB.SmallInteger, default=0, nullable=False)
+    blocked = DB.Column(DB.Boolean, default=False)
+    vehicles = DB.relationship('Vehicle', cascade='all,delete', backref='user')
 
 
-class Vehicle(db.Model):
+class Vehicle(DB.Model):
     """Vehicle of a user"""
     __tablename__ = "vehicles"
-    vehicle_id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.ForeignKey("users.user_id"), nullable=False)
-    vehicle_name = db.Column(db.String(128), nullable=False)
-    vehicle_built = db.Column(db.Date, nullable=False)
-    odo_readings = db.relationship(
+    vehicle_id = DB.Column(DB.Integer, primary_key=True)
+    user_id = DB.Column(DB.ForeignKey("users.user_id"), nullable=False)
+    vehicle_name = DB.Column(DB.String(128), nullable=False)
+    vehicle_built = DB.Column(DB.Date, nullable=False)
+    odo_readings = DB.relationship(
         'Odometer', cascade='all,delete', backref='vehicle')
-    maintenance = db.relationship(
+    maintenance = DB.relationship(
         'Maintenance', cascade='all,delete', backref='vehicle')
 
     def est_mileage(self):
@@ -78,8 +78,8 @@ class Vehicle(db.Model):
             same_date.delete()
 
         # Write to DB
-        db.session.add(new_reading)
-        db.session.commit()
+        DB.session.add(new_reading)
+        DB.session.commit()
 
     def add_maintenance(self, name, description, freq_miles, freq_months):
         """ Method to add a maintenance event for the vehicle. """
@@ -92,21 +92,21 @@ class Vehicle(db.Model):
             freq_months=freq_months)
 
         # Write to DB
-        db.session.add(new_maintenance)
-        db.session.commit()
+        DB.session.add(new_maintenance)
+        DB.session.commit()
 
         return new_maintenance
 
     def add(self):
         """ Method to save the current vehicle object to the DB. """
-        db.session.add(self)
-        db.session.commit()
+        DB.session.add(self)
+        DB.session.commit()
         return self
 
     def delete(self):
         """ Method to delete the current vehicle object from the DB. """
-        db.session.delete(self)
-        db.session.commit()
+        DB.session.delete(self)
+        DB.session.commit()
 
     def age(self):
         """ Returns the age of the vehicle in days."""
@@ -132,32 +132,32 @@ class Vehicle(db.Model):
         return vehicle_status
 
 
-class Odometer(db.Model):
+class Odometer(DB.Model):
     """ Odometer reading for a vehicle. """
     __tablename__ = "odometers"
-    reading_id = db.Column(db.Integer, primary_key=True)
-    vehicle_id = db.Column(
-        db.ForeignKey("vehicles.vehicle_id"), nullable=False)
-    reading = db.Column(db.Integer, nullable=False)
-    reading_date = db.Column(db.Date, nullable=False)
+    reading_id = DB.Column(DB.Integer, primary_key=True)
+    vehicle_id = DB.Column(
+        DB.ForeignKey("vehicles.vehicle_id"), nullable=False)
+    reading = DB.Column(DB.Integer, nullable=False)
+    reading_date = DB.Column(DB.Date, nullable=False)
 
     def delete(self):
         """ Method to delete the odomter reading. """
-        db.session.delete(self)
-        db.session.commit()
+        DB.session.delete(self)
+        DB.session.commit()
 
 
-class Maintenance(db.Model):
+class Maintenance(DB.Model):
     """ A maintenance schedule for a vehicle. Represents a single task. """
     __tablename__ = "maintenance"
-    maintenance_id = db.Column(db.Integer, primary_key=True)
-    vehicle_id = db.Column(
-        db.ForeignKey("vehicles.vehicle_id"), nullable=False)
-    name = db.Column(db.String(128), nullable=True)
-    description = db.Column(db.String(256))
-    freq_miles = db.Column(db.Integer, nullable=True)
-    freq_months = db.Column(db.Integer, nullable=True)
-    logs = db.relationship('Log', cascade='all,delete', backref='maintenance')
+    maintenance_id = DB.Column(DB.Integer, primary_key=True)
+    vehicle_id = DB.Column(
+        DB.ForeignKey("vehicles.vehicle_id"), nullable=False)
+    name = DB.Column(DB.String(128), nullable=True)
+    description = DB.Column(DB.String(256))
+    freq_miles = DB.Column(DB.Integer, nullable=True)
+    freq_months = DB.Column(DB.Integer, nullable=True)
+    logs = DB.relationship('Log', cascade='all,delete', backref='maintenance')
 
     def add_log(self, date, mileage, notes):
         """ Add a log entry for the maintenance schedule. """
@@ -173,8 +173,8 @@ class Maintenance(db.Model):
         self.vehicle.add_odom_reading(mileage, date)
 
         # Write to DB
-        db.session.add(new_log)
-        db.session.commit()
+        DB.session.add(new_log)
+        DB.session.commit()
 
     def est_log(self):
         """ Generate a log entry for the maintenance schedule assuming that the
@@ -191,12 +191,12 @@ class Maintenance(db.Model):
                 datetime.timedelta(days=self.vehicle.age() % freq_days),
                 mileage=last_odo - (last_odo % self.freq_miles),
                 notes=
-                'Autogenerated assuming reccomended maintenance schedule previously kept.'
-            )
+                'Autogenerated assuming reccomended maintenance schedule '\
+                'previously kept.')
 
             # Write to DB
-            db.session.add(new_log)
-            db.session.commit()
+            DB.session.add(new_log)
+            DB.session.commit()
 
     def miles_until_due(self):
         """ Shows the total miles based on current estimated mileage until
@@ -224,7 +224,6 @@ class Maintenance(db.Model):
         # If a previous log entry count days from there, otherwise use vehicle's
         # manufactured date
         sorted_logs = sorted(self.logs, key=lambda x: x.date)
-
 
         if sorted_logs:
             days_since = datetime.date.today() - sorted_logs[-1].date
@@ -264,24 +263,24 @@ class Maintenance(db.Model):
             current_status = 'Good'
         # Return finding
         return current_status
-    
+
     def delete(self):
         """ Method to delete the maintenance task. """
-        db.session.delete(self)
-        db.session.commit()
+        DB.session.delete(self)
+        DB.session.commit()
 
 
-class Log(db.Model):
+class Log(DB.Model):
     """ Log of maintenance undertaken in a maintenance schedule."""
     __tablename__ = "logs"
-    log_id = db.Column(db.Integer, primary_key=True)
-    maintenance_id = db.Column(
-        db.ForeignKey("maintenance.maintenance_id"), nullable=False)
-    date = db.Column(db.Date, nullable=False)
-    mileage = db.Column(db.Integer, nullable=True)
-    notes = db.Column(db.String(256))
+    log_id = DB.Column(DB.Integer, primary_key=True)
+    maintenance_id = DB.Column(
+        DB.ForeignKey("maintenance.maintenance_id"), nullable=False)
+    date = DB.Column(DB.Date, nullable=False)
+    mileage = DB.Column(DB.Integer, nullable=True)
+    notes = DB.Column(DB.String(256))
 
     def delete(self):
         """ Method to delete the log. """
-        db.session.delete(self)
-        db.session.commit()
+        DB.session.delete(self)
+        DB.session.commit()
