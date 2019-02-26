@@ -1,6 +1,7 @@
 astroid==2.1.0
 Click==7.0
 Flask==1.0.2
+flask-heroku==0.1.9
 Flask-Session==0.3.1
 Flask-SQLAlchemy==2.3.2
 gunicorn==19.9.0
