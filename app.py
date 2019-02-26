@@ -10,6 +10,8 @@ from models import Log, Maintenance, Odometer, User, Vehicle, db
 
 app = Flask(__name__)
 
+
+
 # Iniate DB / SQLAlchemy
 app.config[
     "SQLALCHEMY_DATABASE_URI"] = "postgresql://liambates:test@localhost/auto"
@@ -19,6 +21,7 @@ db.init_app(app)
 # Initiate session tracking type
 app.config["SESSION_TYPE"] = "sqlalchemy"
 Session(app)
+heroku = Heroku(app)
 
 
 def login_required(f):
