@@ -320,12 +320,40 @@ def maintenance(vehicle_id, maintenance_id):
     if request.method == 'POST':
         if request.form['date'] == '' or request.form['mileage'] == '':
             flash(u'Missing required field/s for new log entry', 'danger')
-        else:
-            lookup_maintenance.add_log(request.form['date'],
-                                       request.form['mileage'],
-                                       request.form['notes'])
-            flash(u'New log entry added.', 'primary')
 
+        else:
+            # Check the odometer values before and after from the database.
+            odo_before = Odometer.query.filter(
+                lookup_vehicle.vehicle_id == Odometer.vehicle_id).filter(
+                    Odometer.reading_date < request.form['date']).order_by(
+                        Odometer.reading_date.desc()).first()
+            odo_after = Odometer.query.filter(
+                lookup_vehicle.vehicle_id == Odometer.vehicle_id).filter(
+                    Odometer.reading_date > request.form['date']).order_by(
+                        Odometer.reading_date).first()
+
+            mileage = int(request.form['mileage'])
+            logical = True
+
+            # Check mileage entered matches logic of existing odometer readings
+            if odo_before:
+                if odo_before.reading > mileage:
+                    logical = False
+            if odo_after:
+                if odo_after.reading < mileage:
+                    logical = False
+
+            # If illogical flash error, otherwise add the new log with odometer
+            if not logical:
+                flash(
+                    u'Unable to create new log as listed mileage does not correspond with existing odometer readings. Check odometer readings.',
+                    'danger')
+            else:
+                lookup_maintenance.add_log(request.form['date'],
+                                           request.form['mileage'],
+                                           request.form['notes'])
+                flash(u'New log entry added.', 'primary')
+ 
     return render_template(
         "maintenance.html", maintenance=lookup_maintenance, user=user)
 
