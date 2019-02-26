@@ -15,7 +15,7 @@ app = Flask(__name__)
 
 # Iniate DB / SQLAlchemy
 app.config[
-    "SQLALCHEMY_DATABASE_URI"] = "postgresql://liambates:test@localhost/auto"
+    "SQLALCHEMY_DATABASE_URI"] = "postgres://gpcqnmhwemexhc:3fffa4b61fbb9e381c7b3ac0b4f6494c195ae900767d43be77a29004c5d5bc73@ec2-23-21-130-182.compute-1.amazonaws.com:5432/d5bc43q580jbfr"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 
