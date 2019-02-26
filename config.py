@@ -1,11 +1,14 @@
 """Script to create DB"""
 
 from flask import Flask
+from flask_heroku import Heroku
 from flask_session import Session
 
 from models import db
 
 app = Flask(__name__)
+
+heroku = Heroku(app)
 
 # Tell Flask what SQLAlchemy database to use.
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://liambates:test@localhost/auto"

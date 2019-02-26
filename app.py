@@ -17,7 +17,6 @@ app = Flask(__name__)
 app.config[
     "SQLALCHEMY_DATABASE_URI"] = "postgresql://liambates:test@localhost/auto"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-heroku = Heroku(app)
 db.init_app(app)
 
 # Initiate session tracking type
