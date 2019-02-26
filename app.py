@@ -1,9 +1,9 @@
 """Web app to save maintenance schedule of a users vehicle"""
+import os
 
 from functools import wraps
 
 from flask import Flask, flash, redirect, render_template, request, session
-from flask_heroku import Heroku
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -11,11 +11,8 @@ from models import Log, Maintenance, Odometer, User, Vehicle, db
 
 app = Flask(__name__)
 
-
-
 # Iniate DB / SQLAlchemy
-app.config[
-    "SQLALCHEMY_DATABASE_URI"] = "postgres://gpcqnmhwemexhc:3fffa4b61fbb9e381c7b3ac0b4f6494c195ae900767d43be77a29004c5d5bc73@ec2-23-21-130-182.compute-1.amazonaws.com:5432/d5bc43q580jbfr"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ['DATABASE_URL']
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 
@@ -356,7 +353,7 @@ def maintenance(vehicle_id, maintenance_id):
                                            request.form['mileage'],
                                            request.form['notes'])
                 flash(u'New log entry added.', 'primary')
- 
+
     return render_template(
         "maintenance.html", maintenance=lookup_maintenance, user=user)
 

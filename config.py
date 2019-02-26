@@ -1,4 +1,5 @@
 """Script to create DB"""
+import os
 
 from flask import Flask
 from flask_heroku import Heroku
@@ -10,8 +11,15 @@ app = Flask(__name__)
 
 heroku = Heroku(app)
 
-# Tell Flask what SQLAlchemy database to use.
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgres://gpcqnmhwemexhc:3fffa4b61fbb9e381c7b3ac0b4f6494c195ae900767d43be77a29004c5d5bc73@ec2-23-21-130-182.compute-1.amazonaws.com:5432/d5bc43q580jbfr"
+# Iniate DB / SQLAlchemy
+if os.environ['DATABASE_URL'] == None:
+    app.config[
+    "SQLALCHEMY_DATABASE_URI"] = "postgresql://liambates:test@localhost/auto"
+
+else:
+    app.config[
+    "SQLALCHEMY_DATABASE_URI"] = os.environ['DATABASE_URL']
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Initiate session tracking type and create the sessions table
