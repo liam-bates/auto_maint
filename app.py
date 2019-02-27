@@ -77,11 +77,12 @@ def email(message):
 
 
 # Setup scheduler for to check if users need a notification every 10 minutes
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=notify_users, trigger="interval", minutes=1)
-scheduler.start()
+if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(func=notify_users, trigger="interval", minutes=10)
+    scheduler.start()
 
-atexit.register(lambda: scheduler.shutdown())
+    atexit.register(lambda: scheduler.shutdown())
 
 
 def login_required(f):
