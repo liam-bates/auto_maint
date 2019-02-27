@@ -564,5 +564,4 @@ def edit_maintenance(maintenance_id):
 
         db.session.commit()
 
-        return redirect(f'/vehicle/{ed_maintenance.vehicle_id}/maintenance/'\
-            '{ed_maintenance.maintenance_id}')
+        return redirect(f'/vehicle/{ed_maintenance.vehicle_id}/maintenance/{ed_maintenance.maintenance_id}')
