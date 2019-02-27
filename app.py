@@ -12,28 +12,28 @@ from flask_migrate import Migrate
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from models import DB, Log, Maintenance, Odometer, User, Vehicle
+from models import db, Log, Maintenance, Odometer, User, Vehicle
 
-APP = Flask(__name__)
+app = Flask(__name__)
 
 # Iniate DB / SQLAlchemy
-APP.config["SQLALCHEMY_DATABASE_URI"] = os.environ['DATABASE_URL']
-APP.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ['DATABASE_URL']
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # APP.config["SERVER_NAME"] = "auto-maint.herokuapp.com"
-DB.init_app(APP)
+db.init_app(app)
 
 # Initiate session tracking type
-APP.config["SESSION_TYPE"] = "sqlalchemy"
-SESSION = Session(APP)
+app.config["SESSION_TYPE"] = "sqlalchemy"
+session = Session(app)
 
-migrate = Migrate(APP, DB)
-SESSION.app.session_interface.db.create_all()
+migrate = Migrate(app, db)
+session.app.session_interface.db.create_all()
 
 def notify_users():
     """ Daily script run to send email notifications when a vehicle is overdue
     maintenance. """
     # Context to access DB from function
-    with APP.app_context():
+    with app.app_context():
         for user in User.query.all():
             for user_vehicle in user.vehicles:
                 status = user_vehicle.status()
@@ -94,7 +94,7 @@ def login_required(f):
     return decorated_function
 
 
-@APP.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def index():
     """Index route"""
     # If a GET request
@@ -131,7 +131,7 @@ def index():
                     if user and user.failed_logins >= 5:
                         user.blocked = True
                     # Commit to DB
-                    DB.session.commit()
+                    db.session.commit()
                     # Return error
                     flash(u'Incorrect username and/or password provided',
                           'danger')
@@ -142,7 +142,7 @@ def index():
                     # Reset failed login attempts
                     user.failed_logins = 0
                     # Commit to DB
-                    DB.session.commit()
+                    db.session.commit()
                     # Direct to home landing page
                     return redirect('/home')
 
@@ -150,7 +150,7 @@ def index():
     return redirect('/')
 
 
-@APP.route('/register', methods=['GET', 'POST'])
+@app.route('/register', methods=['GET', 'POST'])
 def register():
     """ Registration page to allow users to create an account on the app. """
 
@@ -182,9 +182,9 @@ def register():
                         request.form['password']))
 
                 # Add to DB session
-                DB.session.add(user)
+                db.session.add(user)
                 # Commit to the DB
-                DB.session.commit()
+                db.session.commit()
 
                 # Obtain new user model from the db
                 user = User.query.filter(
@@ -192,7 +192,7 @@ def register():
 
                 # Start a new user session
                 session["user_id"] = user.user_id
-                DB.session.commit()
+                db.session.commit()
 
                 # Generate Email message to send
                 msg = EmailMessage()
@@ -214,7 +214,7 @@ def register():
     return redirect('/register')
 
 
-@APP.route('/home', methods=['GET', 'POST'])
+@app.route('/home', methods=['GET', 'POST'])
 @login_required
 def home():
     """ Home landing page for users. Showing a table of their vehicles """
@@ -227,7 +227,7 @@ def home():
     return render_template("home.html", vehicles=vehicles, user=user)
 
 
-@APP.route('/addvehicle', methods=['GET', 'POST'])
+@app.route('/addvehicle', methods=['GET', 'POST'])
 @login_required
 def add_vehicle():
     """ Simple page to allow user to create a new vehicle in the app. """
@@ -259,7 +259,7 @@ def add_vehicle():
     return redirect('/home')
 
 
-@APP.route('/logout', methods=['GET'])
+@app.route('/logout', methods=['GET'])
 @login_required
 def logout():
     """Log user out"""
@@ -271,7 +271,7 @@ def logout():
     return redirect("/")
 
 
-@APP.route("/vehicle/<vehicle_id>/delete", methods=['GET'])
+@app.route("/vehicle/<vehicle_id>/delete", methods=['GET'])
 @login_required
 def delete_vehicle(vehicle_id):
     """Takes a URL and deletes the vehicle, by the ID provided"""
@@ -291,7 +291,7 @@ def delete_vehicle(vehicle_id):
     return redirect('/home')
 
 
-@APP.route("/vehicle/<vehicle_id>", methods=['GET', 'POST'])
+@app.route("/vehicle/<vehicle_id>", methods=['GET', 'POST'])
 @login_required
 def vehicle(vehicle_id):
     """Provides an overview of a vehicle record. Allows editing and deletion."""
@@ -327,7 +327,7 @@ def vehicle(vehicle_id):
     return render_template('vehicle.html', vehicle=lookup_vehicle, user=user)
 
 
-@APP.route("/vehicle/<vehicle_id>/addmaint", methods=['GET', 'POST'])
+@app.route("/vehicle/<vehicle_id>/addmaint", methods=['GET', 'POST'])
 @login_required
 def add_maint(vehicle_id):
     """Allow user to add a maintenance schedule event."""
@@ -367,7 +367,7 @@ def add_maint(vehicle_id):
     return redirect("vehicle/" + vehicle_id)
 
 
-@APP.route(
+@app.route(
     "/vehicle/<vehicle_id>/maintenance/<maintenance_id>",
     methods=['GET', 'POST'])
 @login_required
@@ -427,13 +427,13 @@ def maintenance(vehicle_id, maintenance_id):
         "maintenance.html", maintenance=lookup_maintenance, user=user)
 
 
-@APP.template_filter('mileage')
+@app.template_filter('mileage')
 def mileage_format(value):
     """ Custom formatting for mileage. """
     return "{:,} miles".format(value)
 
 
-@APP.template_filter('age')
+@app.template_filter('age')
 def age_format(value):
     """ Custom formatting for age, converting from days to years. """
 
@@ -442,7 +442,7 @@ def age_format(value):
     return "{:,.2f} years".format(value)
 
 
-@APP.route("/odo/<reading_id>/delete", methods=['GET'])
+@app.route("/odo/<reading_id>/delete", methods=['GET'])
 @login_required
 def delete_odometer(reading_id):
     """Takes a URL and deletes the odometer, by the ID provided"""
@@ -466,7 +466,7 @@ def delete_odometer(reading_id):
     return redirect(f'/vehicle/{del_odom.vehicle.vehicle_id}')
 
 
-@APP.route("/maintenance/<maintenance_id>/delete", methods=['GET'])
+@app.route("/maintenance/<maintenance_id>/delete", methods=['GET'])
 @login_required
 def delete_maintenance(maintenance_id):
     """Takes a URL and deletes the vehicle, by the ID provided"""
@@ -486,7 +486,7 @@ def delete_maintenance(maintenance_id):
     return redirect(f'/vehicle/{del_maintenance.vehicle_id}')
 
 
-@APP.route("/log/<log_id>/delete", methods=['GET'])
+@app.route("/log/<log_id>/delete", methods=['GET'])
 @login_required
 def delete_log(log_id):
     """Takes a URL and deletes the log entry, by the ID provided"""
@@ -507,7 +507,7 @@ def delete_log(log_id):
     )
 
 
-@APP.route("/vehicle/edit/<vehicle_id>", methods=['POST'])
+@app.route("/vehicle/edit/<vehicle_id>", methods=['POST'])
 @login_required
 def edit_vehicle(vehicle_id):
     """ Allows for the editing of a vehicle's attributes using POST method. """
@@ -528,12 +528,12 @@ def edit_vehicle(vehicle_id):
 
             flash(u'Vehicle information updated.', 'primary')
 
-            DB.session.commit()
+            db.session.commit()
 
         return redirect(f'/vehicle/{vehicle_id}')
 
 
-@APP.route("/maintenance/edit/<maintenance_id>", methods=['POST'])
+@app.route("/maintenance/edit/<maintenance_id>", methods=['POST'])
 @login_required
 def edit_maintenance(maintenance_id):
     """ Allows the editing of maintenance tasks via POST method. """
@@ -560,7 +560,7 @@ def edit_maintenance(maintenance_id):
 
         flash(u'Maintenance information updated.', 'primary')
 
-        DB.session.commit()
+        db.session.commit()
 
         return redirect(f'/vehicle/{ed_maintenance.vehicle_id}/maintenance/'\
             '{ed_maintenance.maintenance_id}')
