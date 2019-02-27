@@ -18,12 +18,12 @@
         <div class="form-group">
             <label for="freq_miles">Frequency (miles)</label>
             <input type="number" class="form-control" name="freq_miles"
-                placeholder="How often maintenance performed in miles" min=1 required>
+                placeholder="How often maintenance performed in miles" min=1 max=1000000 required>
         </div>
         <div class="form-group">
             <label for="freq_months">Frequency (months)</label>
             <input type="number" class="form-control" name="freq_months"
-                placeholder="How often maintenance performed in months" min=1 required>
+                placeholder="How often maintenance performed in months" min=1 max=240 required>
             <small>Maintenance will be due at whichever comes first mileage or months</small>
         </div>
         <hr>

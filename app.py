@@ -12,7 +12,7 @@ from flask_migrate import Migrate
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from models import db, Log, Maintenance, Odometer, User, Vehicle
+from models import Log, Maintenance, Odometer, User, Vehicle, db
 
 app = Flask(__name__)
 
@@ -27,9 +27,8 @@ app.config["SESSION_TYPE"] = "sqlalchemy"
 mksess = Session(app)
 mksess.app.session_interface.db.create_all()
 
-
-
 migrate = Migrate(app, db)
+
 
 def notify_users():
     """ Daily script run to send email notifications when a vehicle is overdue
@@ -41,10 +40,11 @@ def notify_users():
                 status = user_vehicle.status()
                 if 'Soon' in status or 'Overdue' in status:
                     if user_vehicle.last_notification:
-                        days_since = datetime.datetime.today() - user_vehicle.last_notification
+                        days_since = datetime.datetime.today(
+                        ) - user_vehicle.last_notification
                         if days_since < datetime.timedelta(days=3):
                             continue
-                            
+
                     # Generate Email message to send
                     msg = EmailMessage()
                     msg['Subject'] = 'Your vehicle is due maintenance'
@@ -55,12 +55,13 @@ def notify_users():
                     html = render_template(
                         'email/reminder.html', vehicle=user_vehicle)
                     msg.set_content(html, subtype='html')
-                    
+
                     # Send email
                     email(msg)
 
                     # Update DB to with timestamp
                     user_vehicle.notification_sent()
+
 
 def email(message):
     """ Sends the provided email message using SMTP. """
@@ -72,9 +73,9 @@ def email(message):
     server.quit()
 
 
-# Setup scheduler for periodic tasks
+# Setup scheduler for to check if users need a notification every 10 minutes
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=notify_users, trigger="interval", days=1)
+scheduler.add_job(func=notify_users, trigger="interval", minutes=10)
 scheduler.start()
 
 atexit.register(lambda: scheduler.shutdown())
@@ -203,10 +204,9 @@ def register():
                 msg['To'] = user.email
 
                 # Generate HTML for email
-                html = render_template(
-                    'email/welcome.html', user=user)
+                html = render_template('email/welcome.html', user=user)
                 msg.set_content(html, subtype='html')
-                
+
                 # Send email
                 email(msg)
 
@@ -564,4 +564,6 @@ def edit_maintenance(maintenance_id):
 
         db.session.commit()
 
-        return redirect(f'/vehicle/{ed_maintenance.vehicle_id}/maintenance/{ed_maintenance.maintenance_id}')
+        return redirect(
+            f'/vehicle/{ed_maintenance.vehicle_id}/maintenance/{ed_maintenance.maintenance_id}'
+        )

@@ -45,22 +45,22 @@
                 <form method="post" action="/maintenance/edit/{{ maintenance.maintenance_id }}">
                     <div class="form-group">
                         <label for="name">Maintenance Name</label>
-                        <input type="text" class="form-control" name="name" value="{{ maintenance.name }}" required>
+                        <input type="text" class="form-control" name="name" maxlength="128" value="{{ maintenance.name }}" required>
                     </div>
                     <div class="form-group">
                         <label for="description">Maintenance Description (optional)</label>
                         <textarea class="form-control" name="description" placeholder="Maintenance description"
-                            rows="3">{{ maintenance.description }}</textarea>
+                            rows="3" maxlength="256">{{ maintenance.description }}</textarea>
                     </div>
                     <div class="form-group">
                         <label for="freq_miles">Frequency (miles)</label>
                         <input type="number" class="form-control" name="freq_miles" value="{{ maintenance.freq_miles }}"
-                            min=1 required>
+                            min=1 max=1000000 required>
                     </div>
                     <div class="form-group">
                         <label for="freq_months">Frequency (months)</label>
                         <input type="number" class="form-control" name="freq_months"
-                            value="{{ maintenance.freq_months }}" min=1 required>
+                            value="{{ maintenance.freq_months }}" min=1 max=240 required>
                         <small>Maintenance will be due at whichever comes first mileage or months</small>
                     </div>
             </div>
@@ -98,16 +98,16 @@
     <form method="post">
         <div class="form-group">
             <label for="mileage">Date</label>
-            <input type="date" class="form-control" placeholder="Date when maintenance performed" name="date">
+            <input type="date" class="form-control" placeholder="Date when maintenance performed" name="date" required>
         </div>
         <div class="form-group">
             <label for="date">Mileage</label>
             <input type="number" class="form-control" name="mileage" placeholder="Mileage when maintenance performed"
-                min=1>
+                min=1 max=2000000 required>
         </div>
         <div class="form-group">
             <label for="notes">Notes</label>
-            <textarea class="form-control" placeholder="Notes" name="notes" rows="3"></textarea>
+            <textarea class="form-control" placeholder="Notes" name="notes" rows="3" maxlength="256"></textarea>
         </div>
         <button type="submit" class="btn btn-primary">Add Log</button>
     </form>

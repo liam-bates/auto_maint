@@ -9,7 +9,7 @@
     <form method="post">
         <div class="form-group">
             <label for="vehicle_name">Vehicle Name</label>
-            <input type="text" class="form-control" name="vehicle_name" placeholder="Your vehicle's name" required>
+            <input type="text" class="form-control" name="vehicle_name" placeholder="Your vehicle's name" maxlength="128" required>
         </div>
         <div class="form-group">
             <label for="name">Date Manufactured</label>
@@ -19,7 +19,7 @@
         </div>
         <div class="form-group">
             <label for="mileage">Current Total Mileage</label>
-            <input type="number" class="form-control" name="mileage" placeholder="Your vehicle's current mileage" min=1
+            <input type="number" class="form-control" name="mileage" placeholder="Your vehicle's current mileage" min=1 max=1000000
                 required>
         </div>
         <button type="submit" class="btn btn-primary">Add vehicle</button>
