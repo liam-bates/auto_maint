@@ -37,6 +37,7 @@ def notify_users():
     maintenance. """
     # Context to access DB from function
     with app.app_context():
+        print("NOTIFY USERS RUNNING")
         for user in User.query.all():
             for user_vehicle in user.vehicles:
                 status = user_vehicle.status()
@@ -77,7 +78,7 @@ def email(message):
 
 # Setup scheduler for to check if users need a notification every 10 minutes
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=notify_users, trigger="interval", minutes=10)
+scheduler.add_job(func=notify_users, trigger="interval", minutes=1)
 scheduler.start()
 
 atexit.register(lambda: scheduler.shutdown())
