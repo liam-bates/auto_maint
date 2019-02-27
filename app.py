@@ -24,7 +24,10 @@ db.init_app(app)
 
 # Initiate session tracking type
 app.config["SESSION_TYPE"] = "sqlalchemy"
-Session(app)
+mksess = Session(app)
+mksess.app.session_interface.db.create_all()
+
+
 
 migrate = Migrate(app, db)
 
