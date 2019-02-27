@@ -19,7 +19,6 @@ app = Flask(__name__)
 # Iniate DB / SQLAlchemy
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ['DATABASE_URL']
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-# APP.config["SERVER_NAME"] = "auto-maint.herokuapp.com"
 db.init_app(app)
 
 # Initiate session tracking type
@@ -28,6 +27,9 @@ mksess = Session(app)
 mksess.app.session_interface.db.create_all()
 
 migrate = Migrate(app, db)
+
+# Set domain
+app.config["SERVER_NAME"] = os.environ['SERVER_NAME']
 
 
 def notify_users():
