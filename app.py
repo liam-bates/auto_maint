@@ -33,7 +33,7 @@ app.config["SERVER_NAME"] = os.environ['SERVER_NAME']
 
 
 def notify_users():
-    """ Daily script run to send email notifications when a vehicle is overdue
+    """  Routine script to send email notifications when a vehicle is overdue
     maintenance. """
     # Context to access DB from function
     with app.app_context():
@@ -79,7 +79,7 @@ def email(message):
 # Setup scheduler for to check if users need a notification every 10 minutes
 if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
     scheduler = BackgroundScheduler()
-    scheduler.add_job(func=notify_users, trigger="interval", minutes=10)
+    scheduler.add_job(func=notify_users, trigger="interval", minutes=1)
     scheduler.start()
 
     atexit.register(lambda: scheduler.shutdown())
