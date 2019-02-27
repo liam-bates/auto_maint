@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+    <div class="container">
+        <p>Hi {{ vehicle.user.name }},</p>
+        <p>Your {{ vehicle.vehicle_name }} is due maintenance:</p>
+        <table class="table">
+            <thead>
+                <th>Maintenance Task</th>
+                <th>Miles due</th>
+                <th>Days due</th>
+                <th>Status</th>
+            </thead>
+            <tbody>
+                {% for maintenance in vehicle.maintenance %}
+                <tr>
+                    <td>
+                        <a
+                            href="/vehicle/{{ vehicle.vehicle_id }}/maintenance/{{ maintenance.maintenance_id }}">{{ maintenance.name }}</a>
+                    </td>
+                    <td>{{ maintenance.miles_until_due() }}</td>
+                    <td>{{ maintenance.days_until_due() }}</td>
+                    {% if maintenance.status() == 'Good' %}
+                    <td><button type="button" class="btn btn btn-success">{{ maintenance.status() }}</button>
+                    </td>
+                    {% elif maintenance.status() == 'Soon' %}
+                    <td><button type="button" class="btn btn btn-warning">{{ maintenance.status() }}</button>
+                    </td>
+                    {% else %}
+                    <td><button type="button" class="btn btn btn-danger">{{ maintenance.status() }}</button>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p>Click on the maintenance event above to find out more information on Auto Maintenance.</p>
+        <br>
+        <p>Thanks,</p>
+        <p>Auto Maintenance</p>
+    </div>
+</body>
+
+</html>

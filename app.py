@@ -1,7 +1,12 @@
 """Web app to save maintenance schedule of a users vehicle"""
+import atexit
+import datetime
 import os
+import smtplib
+from email.message import EmailMessage
 from functools import wraps
 
+from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -18,6 +23,55 @@ DB.init_app(APP)
 # Initiate session tracking type
 APP.config["SESSION_TYPE"] = "sqlalchemy"
 Session(APP)
+
+
+def notify_users():
+    """ Daily script run to send email notifications when a vehicle is overdue
+    maintenance. """
+    # Context to access DB from function
+    with APP.app_context():
+        for user in User.query.all():
+            for user_vehicle in user.vehicles:
+                status = user_vehicle.status()
+                if 'Soon' in status or 'Overdue' in status:
+                    if user_vehicle.last_notification:
+                        days_since = datetime.datetime.today() - user_vehicle.last_notification
+                        if days_since < datetime.timedelta(days=3):
+                            continue
+                            
+                    # Generate Email message to send
+                    msg = EmailMessage()
+                    msg['Subject'] = 'Your vehicle is due maintenance'
+                    msg['From'] = 'auto_maint@liam-bates.com'
+                    msg['To'] = user.email
+
+                    # Generate HTML for email
+                    html = render_template(
+                        'email/reminder.html', vehicle=user_vehicle)
+                    msg.set_content(html, subtype='html')
+                    
+                    # Send email
+                    email(msg)
+
+                    # Update DB to with timestamp
+                    user_vehicle.notification_sent()
+
+def email(message):
+    """ Sends the provided email message using SMTP. """
+    # Send message to the email server.
+    server = smtplib.SMTP(os.environ['SMTP_SERVER'])
+    server.starttls()
+    server.login(os.environ['SMTP_LOGIN'], os.environ['SMTP_PASSWORD'])
+    server.send_message(message)
+    server.quit()
+
+
+# Setup scheduler for periodic tasks
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=notify_users, trigger="interval", minutes=1)
+scheduler.start()
+
+atexit.register(lambda: scheduler.shutdown())
 
 
 def login_required(f):
@@ -135,6 +189,18 @@ def register():
                 # Start a new user session
                 session["user_id"] = user.user_id
                 DB.session.commit()
+
+                # Simple test snippet to send an email.
+                server = smtplib.SMTP('smtp.gmail.com:587')
+                server.starttls()
+                server.login('liambates@gmail.com', 'xdsciowvhyyztgsy')
+                server.set_debuglevel(1)
+                server.sendmail(
+                    'auto_maint@liam-bates.com', user.email,
+                    """Welcome to Auto-Maintenance! We'll email you at this
+                    address to notifiy you of any upcoming maintenance on your
+                    vehicles.""")
+                server.quit()
 
                 # Redirect to the vehicle landing page
                 return redirect('/home')
@@ -351,7 +417,6 @@ def maintenance(vehicle_id, maintenance_id):
                                            request.form['mileage'],
                                            request.form['notes'])
                 flash(u'New log entry added.', 'primary')
-
     return render_template(
         "maintenance.html", maintenance=lookup_maintenance, user=user)
 
@@ -431,8 +496,9 @@ def delete_log(log_id):
     else:
         flash('Unauthorized access to log entry.', 'danger')
 
-    return redirect(f'/vehicle/{del_log.maintenance.vehicle_id}'\
-        '/maintenance/{del_log.maintenance_id}')
+    return redirect(
+        f'/vehicle/{del_log.maintenance.vehicle_id}/maintenance/{del_log.maintenance_id}'
+    )
 
 
 @APP.route("/vehicle/edit/<vehicle_id>", methods=['POST'])

@@ -26,6 +26,7 @@ class Vehicle(DB.Model):
     user_id = DB.Column(DB.ForeignKey("users.user_id"), nullable=False)
     vehicle_name = DB.Column(DB.String(128), nullable=False)
     vehicle_built = DB.Column(DB.Date, nullable=False)
+    last_notification = DB.Column(DB.DateTime, nullable=True)
     odo_readings = DB.relationship(
         'Odometer', cascade='all,delete', backref='vehicle')
     maintenance = DB.relationship(
@@ -130,6 +131,10 @@ class Vehicle(DB.Model):
                 vehicle_status = 'Soon'
 
         return vehicle_status
+
+    def notification_sent(self):
+        self.last_notification = datetime.datetime.today()
+        DB.session.commit()
 
 
 class Odometer(DB.Model):
