@@ -24,10 +24,9 @@ db.init_app(app)
 
 # Initiate session tracking type
 app.config["SESSION_TYPE"] = "sqlalchemy"
-session = Session(app)
+Session(app)
 
 migrate = Migrate(app, db)
-session.app.session_interface.db.create_all()
 
 def notify_users():
     """ Daily script run to send email notifications when a vehicle is overdue
