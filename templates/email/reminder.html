@@ -15,7 +15,7 @@
         <tr>
             <td>
                 <a
-                    href="/vehicle/{{ vehicle.vehicle_id }}/maintenance/{{ maintenance.maintenance_id }}">{{ maintenance.name }}</a>
+                    href="{{ url_for('maintenance', maintenance_id=maintenance.maintenance_id, vehicle_id=vehicle.vehicle_id, _external=True) }}">{{ maintenance.name }}</a>
             </td>
             <td>{{ maintenance.miles_until_due() }}</td>
             <td>{{ maintenance.days_until_due() }}</td>

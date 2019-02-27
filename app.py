@@ -18,6 +18,7 @@ APP = Flask(__name__)
 # Iniate DB / SQLAlchemy
 APP.config["SQLALCHEMY_DATABASE_URI"] = os.environ['DATABASE_URL']
 APP.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+# APP.config["SERVER_NAME"] = "auto-maint.herokuapp.com"
 DB.init_app(APP)
 
 # Initiate session tracking type
@@ -68,7 +69,7 @@ def email(message):
 
 # Setup scheduler for periodic tasks
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=notify_users, trigger="interval", minutes=1)
+scheduler.add_job(func=notify_users, trigger="interval", days=1)
 scheduler.start()
 
 atexit.register(lambda: scheduler.shutdown())
@@ -190,17 +191,19 @@ def register():
                 session["user_id"] = user.user_id
                 DB.session.commit()
 
-                # Simple test snippet to send an email.
-                server = smtplib.SMTP('smtp.gmail.com:587')
-                server.starttls()
-                server.login('liambates@gmail.com', 'xdsciowvhyyztgsy')
-                server.set_debuglevel(1)
-                server.sendmail(
-                    'auto_maint@liam-bates.com', user.email,
-                    """Welcome to Auto-Maintenance! We'll email you at this
-                    address to notifiy you of any upcoming maintenance on your
-                    vehicles.""")
-                server.quit()
+                # Generate Email message to send
+                msg = EmailMessage()
+                msg['Subject'] = 'Welcome to Auto Maintenance!'
+                msg['From'] = 'auto_maint@liam-bates.com'
+                msg['To'] = user.email
+
+                # Generate HTML for email
+                html = render_template(
+                    'email/welcome.html', user=user)
+                msg.set_content(html, subtype='html')
+                
+                # Send email
+                email(msg)
 
                 # Redirect to the vehicle landing page
                 return redirect('/home')
