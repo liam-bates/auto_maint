@@ -8,6 +8,7 @@ from functools import wraps
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, flash, redirect, render_template, request, session
+from flask_migrate import Migrate
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -23,8 +24,10 @@ DB.init_app(APP)
 
 # Initiate session tracking type
 APP.config["SESSION_TYPE"] = "sqlalchemy"
-Session(APP)
+SESSION = Session(APP)
+SESSION.app.session_interface.db.create_all()
 
+migrate = Migrate(APP, DB)
 
 def notify_users():
     """ Daily script run to send email notifications when a vehicle is overdue
