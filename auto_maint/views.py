@@ -4,7 +4,7 @@ from flask import flash, redirect, render_template, request, session
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from auto_maint import app, db
-from auto_maint.helpers import email, login_required
+from auto_maint.helpers import email, login_required, standard_schedule
 from auto_maint.models import Log, Maintenance, Odometer, User, Vehicle
 
 
@@ -166,6 +166,8 @@ def add_vehicle():
 
         # Use method to add new odometer reading for the vehicle
         new_vehicle.add_odom_reading(request.form['mileage'])
+        if 'standard' in request.form:
+            standard_schedule(new_vehicle)
         flash(f'{new_vehicle.vehicle_name} added to your vehicle list.',
               'primary')
     # Return to the landing screen

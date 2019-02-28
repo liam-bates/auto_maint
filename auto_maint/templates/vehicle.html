@@ -111,7 +111,7 @@
                 <th>Status</th>
             </thead>
             <tbody>
-                {% for maintenance in vehicle.maintenance | sort(attribute='name') %}
+                {% for maintenance in vehicle.maintenance | sort(attribute='freq_miles') %}
                 <tr>
                     <td><a
                             href="/vehicle/{{ vehicle.vehicle_id }}/maintenance/{{ maintenance.maintenance_id }}">{{ maintenance.name }}</a>
