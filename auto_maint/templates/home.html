@@ -13,7 +13,7 @@
         <th scope="col" class="d-none d-md-table-cell">Last Reported Mileage</th>
         <th>Estimated Current Mileage</th>
         <th scope="col" class="d-none d-md-table-cell">Age</th>
-        <th>Status</th>
+        <th>Maintenance Status</th>
     </thead>
     <tbody>
         {% for vehicle in vehicles %}
@@ -23,11 +23,12 @@
             <td>{{ vehicle.est_mileage() | mileage }}</td>
             <td scope="col" class="d-none d-md-table-cell">{{ vehicle.age() | age }}</td>
             {% if vehicle.status() == 'Good' %}
-            <td><button type="button" class="btn btn btn-success">{{ vehicle.status() }}</button></td>
+            <td><span class="badge badge-success"><i class="fas fa-check"></i>&nbsp;&nbsp;Good</span></td>
             {% elif vehicle.status() == 'Soon' %}
-            <td><button type="button" class="btn btn btn-warning">{{ vehicle.status() }}</button></td>
+            <td><span class="badge badge-warning"><i class="fas fa-info"></i>&nbsp;&nbsp;Soon</span></td>
             {% else %}
-            <td><button type="button" class="btn btn btn-danger">{{ vehicle.status() }}</button></td>
+            <td><span class="badge badge-danger"><i
+                        class="fas fa-exclamation-triangle"></i></i>&nbsp;&nbsp;Overdue</span></td>
             {% endif %}
         </tr>
         {% endfor %}
@@ -40,5 +41,5 @@
     your vehicle.</p>
 <p>To begin add a vehicle: </p>
 {% endif %}
-<a href="/addvehicle" class="btn btn btn-primary" role="button">Add a vehicle</a>
+<a href="/addvehicle" class="btn btn btn-primary" role="button">Add a Vehicle</a>
 {% endblock %}

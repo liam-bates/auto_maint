@@ -5,6 +5,11 @@
 {% block main %}
 
 <h1 class="mt-3">{{ vehicle.vehicle_name }}</h1>
+<a class="btn btn-secondary" href="/home" role="button"><i class="fas fa-arrow-left"></i> Back</a>
+<button class="btn btn-primary" data-toggle="modal" data-target="#EditModal"><i class="fas fa-pen"></i>
+    Edit</a></button>
+<button class="btn btn-danger" data-toggle="modal" data-target="#DeleteModal"><i class="fas fa-trash-alt"></i>
+    Delete</a></button>
 <div class="row">
     <div class="col-md-6">
         <h2 class="mt-2">Vehicle Info</h2>
@@ -12,9 +17,6 @@
         <p><b>Estimated Current Mileage: </b> {{ vehicle.est_mileage() | mileage }}</p>
         <p><b>Date Manufactured: </b>{{ vehicle.vehicle_built }}</p>
         <p><b>Age: </b>{{ vehicle.age() | age }}</p>
-        <a class="btn btn-secondary" href="/home" role="button">Back</a>
-        <button class="btn btn-primary" data-toggle="modal" data-target="#EditModal">Edit</a></button>
-        <button class="btn btn-danger" data-toggle="modal" data-target="#DeleteModal">Delete</a></button>
     </div>
 
     <div class="modal fade" id="DeleteModal" role="dialog">
@@ -89,11 +91,11 @@
             <label for="mileage">Current Mileage</label>
             <div class="form-row">
                 <div class="form-group col-md-6">
-                    <input type="number" class="form-control" name="mileage" placeholder="Enter current mileage" min=1 max=2000000
-                        required>
+                    <input type="number" class="form-control" name="mileage" placeholder="Enter current mileage" min=1
+                        max=2000000 required>
                 </div>
                 <div class="form-group col-md-6">
-                    <button type="submit" class="btn btn-primary">Add Mileage</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-car"></i> Add Mileage</button>
                 </div>
             </div>
         </form>
@@ -119,14 +121,12 @@
                     <td scope="col" class="d-none d-sm-table-cell">{{ maintenance.freq_miles | mileage }}</td>
                     <td scope="col" class="d-none d-sm-table-cell">{{ maintenance.freq_months }} months</td>
                     {% if maintenance.status() == 'Good' %}
-                    <td><button type="button" class="btn btn btn-success">{{ maintenance.status() }}</button>
-                    </td>
+                    <td><span class="badge badge-success"><i class="fas fa-check"></i>&nbsp;&nbsp;Good</span></td>
                     {% elif maintenance.status() == 'Soon' %}
-                    <td><button type="button" class="btn btn btn-warning">{{ maintenance.status() }}</button>
-                    </td>
+                    <td><span class="badge badge-warning"><i class="fas fa-info"></i>&nbsp;&nbsp;Soon</span></td>
                     {% else %}
-                    <td><button type="button" class="btn btn btn-danger">{{ maintenance.status() }}</button>
-                    </td>
+                    <td><span class="badge badge-danger"><i
+                                class="fas fa-exclamation-triangle"></i></i>&nbsp;&nbsp;Overdue</span></td>
                     {% endif %}
                 </tr>
                 {% endfor %}

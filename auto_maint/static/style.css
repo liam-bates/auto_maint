@@ -27,3 +27,12 @@ html {
     margin-top: 2rem;
     margin-bottom: 2rem;
   }
+
+  .badge {
+    font-size: 20px;
+    font-weight: lighter;
+  }
+
+  .btn {
+    font-weight: lighter;
+  }

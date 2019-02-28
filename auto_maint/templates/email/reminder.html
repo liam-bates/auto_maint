@@ -20,14 +20,13 @@
             <td>{{ maintenance.miles_until_due() }}</td>
             <td>{{ maintenance.days_until_due() }}</td>
             {% if maintenance.status() == 'Good' %}
-            <td><button type="button" class="btn btn btn-success">{{ maintenance.status() }}</button>
-            </td>
+            <td><span class="badge badge-success"><i class="fas fa-check"></i>&nbsp;&nbsp;Good</span></td>
             {% elif maintenance.status() == 'Soon' %}
-            <td><button type="button" class="btn btn btn-warning">{{ maintenance.status() }}</button>
+            <td><span class="badge badge-warning"><i class="fas fa-info"></i>&nbsp;&nbsp;Soon</span></td>
             </td>
             {% else %}
-            <td><button type="button" class="btn btn btn-danger">{{ maintenance.status() }}</button>
-            </td>
+            <td><span class="badge badge-danger"><i
+                        class="fas fa-exclamation-triangle"></i></i>&nbsp;&nbsp;Overdue</span></td>
             {% endif %}
         </tr>
         {% endfor %}
