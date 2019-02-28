@@ -1,12 +1,8 @@
 """ auto_maint app models defined """
 import datetime
 
-from flask_sqlalchemy import SQLAlchemy
+from auto_maint import db
 
-db = SQLAlchemy()
-
-
-# Define an object of a user within the context of the DB
 class User(db.Model):
     """User of the website"""
     __tablename__ = "users"

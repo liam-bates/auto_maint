@@ -1,104 +1,11 @@
-"""Web app to save maintenance schedule of a users vehicle"""
-import atexit
-import datetime
-import os
-import smtplib
 from email.message import EmailMessage
-from functools import wraps
 
-from apscheduler.schedulers.background import BackgroundScheduler
-from flask import Flask, flash, redirect, render_template, request, session
-from flask_migrate import Migrate
-from flask_session import Session
+from flask import flash, redirect, render_template, request, session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from models import Log, Maintenance, Odometer, User, Vehicle, db
-
-app = Flask(__name__)
-
-# Iniate DB / SQLAlchemy
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ['DATABASE_URL']
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db.init_app(app)
-
-# Initiate session tracking type
-app.config["SESSION_TYPE"] = "sqlalchemy"
-mksess = Session(app)
-mksess.app.session_interface.db.create_all()
-
-migrate = Migrate(app, db)
-
-# Set domain
-app.config["SERVER_NAME"] = os.environ['SERVER_NAME']
-
-
-def notify_users():
-    """  Routine script to send email notifications when a vehicle is overdue
-    maintenance. """
-    # Context to access DB from function
-    with app.app_context():
-        print("NOTIFY USERS RUNNING")
-        for user in User.query.all():
-            for user_vehicle in user.vehicles:
-                status = user_vehicle.status()
-                if 'Soon' in status or 'Overdue' in status:
-                    if user_vehicle.last_notification:
-                        days_since = datetime.datetime.today(
-                        ) - user_vehicle.last_notification
-                        if days_since < datetime.timedelta(days=3):
-                            continue
-
-                    # Generate Email message to send
-                    msg = EmailMessage()
-                    msg['Subject'] = 'Your vehicle is due maintenance'
-                    msg['From'] = 'auto_maint@liam-bates.com'
-                    msg['To'] = user.email
-
-                    # Generate HTML for email
-                    html = render_template(
-                        'email/reminder.html', vehicle=user_vehicle)
-                    msg.set_content(html, subtype='html')
-
-                    # Send email
-                    email(msg)
-
-                    # Update DB to with timestamp
-                    user_vehicle.notification_sent()
-
-
-def email(message):
-    """ Sends the provided email message using SMTP. """
-    # Send message to the email server.
-    server = smtplib.SMTP(os.environ['SMTP_SERVER'])
-    server.starttls()
-    server.login(os.environ['SMTP_LOGIN'], os.environ['SMTP_PASSWORD'])
-    server.send_message(message)
-    server.quit()
-
-
-# Setup scheduler for to check if users need a notification every 10 minutes
-if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(func=notify_users, trigger="interval", minutes=10)
-    scheduler.start()
-
-    atexit.register(lambda: scheduler.shutdown())
-
-
-def login_required(f):
-    """
-    Decorate routes to require login.
-
-    http://flask.pocoo.org/docs/1.0/patterns/viewdecorators/
-    """
-
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if session.get("user_id") is None:
-            return redirect("/")
-        return f(*args, **kwargs)
-
-    return decorated_function
+from auto_maint import app, db
+from auto_maint.helpers import email, login_required
+from auto_maint.models import Log, Maintenance, Odometer, User, Vehicle
 
 
 @app.route('/', methods=['GET', 'POST'])
