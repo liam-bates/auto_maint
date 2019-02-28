@@ -31,10 +31,10 @@ app.config["SERVER_NAME"] = os.environ['SERVER_NAME']
 from auto_maint.helpers import notify_users
 import auto_maint.views
 
-# Setup scheduler for to check if users need a notification every 10 minutes
+# Setup scheduler for to check if users need a notification every 5 minutes
 if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     scheduler = BackgroundScheduler()
-    scheduler.add_job(func=notify_users, trigger="interval", seconds=10)
+    scheduler.add_job(func=notify_users, trigger="interval", minutes=5)
     scheduler.start()
 
     atexit.register(lambda: scheduler.shutdown())

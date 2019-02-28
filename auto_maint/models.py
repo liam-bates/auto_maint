@@ -3,6 +3,7 @@ import datetime
 
 from auto_maint import db
 
+
 class User(db.Model):
     """User of the website"""
     __tablename__ = "users"
@@ -129,6 +130,7 @@ class Vehicle(db.Model):
         return vehicle_status
 
     def notification_sent(self):
+        """ Records when notifcation has been sent. """
         self.last_notification = datetime.datetime.today()
         db.session.commit()
 
