@@ -22,6 +22,7 @@ app.config["SESSION_TYPE"] = "sqlalchemy"
 mksess = Session(app)
 mksess.app.session_interface.db.create_all()
 
+# Initiate Flask-Migrate
 migrate = Migrate(app, db)
 
 # Set domain
