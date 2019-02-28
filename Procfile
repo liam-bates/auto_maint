@@ -1,2 +1,2 @@
-web: gunicorn app:app --preload
+web: gunicorn auto_maint:app --preload
 release: flask db upgrade
