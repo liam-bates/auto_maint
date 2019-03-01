@@ -124,7 +124,7 @@ def register():
                 # Redirect to the vehicle landing page
                 return redirect('/home')
 
-    return redirect('/register')
+    return redirect('/')
 
 
 @app.route('/home', methods=['GET', 'POST'])
