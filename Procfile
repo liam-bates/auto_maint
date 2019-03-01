@@ -1,2 +1,2 @@
-web: gunicorn auto_maint:app
+web: python run.py
 release: flask db upgrade

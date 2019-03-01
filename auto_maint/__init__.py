@@ -1,8 +1,6 @@
 """ Web app to save maintenance schedule of a users vehicle. """
-import atexit
 import os
 
-from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, session
 from flask_migrate import Migrate
 from flask_session import Session
@@ -28,16 +26,7 @@ migrate = Migrate(app, db)
 # Set domain
 app.config["SERVER_NAME"] = os.environ['SERVER_NAME']
 
-from auto_maint.helpers import notify_users
 import auto_maint.views
-
-# Setup scheduler for to check if users need a notification every 5 minutes
-if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(func=notify_users, trigger="interval", minutes=5)
-    scheduler.start()
-
-    atexit.register(lambda: scheduler.shutdown())
 
 # Stop reloader process
 if __name__ == '__main__':

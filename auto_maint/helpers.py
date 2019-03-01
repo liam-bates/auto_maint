@@ -75,27 +75,27 @@ def standard_schedule(vehicle):
     # Based on a 2001 Honda Accord
     vehicle.add_maintenance(
         'Replace engine oil',
-        "Check your vehicle's manual to determine the correct oil type", 7500,
+        "Check your vehicle's manual to determine the correct oil type.", 7500,
         12)
-    vehicle.add_maintenance('Replace oil filter', '', 15000, 12)
-    vehicle.add_maintenance('Replace air cleaner element', '', 30000, 24)
-    vehicle.add_maintenance('Inspect valve clearance', 'Adjust if noisy',
+    vehicle.add_maintenance('Replace Oil Filter', '', 15000, 12)
+    vehicle.add_maintenance('Replace Air Cleaner Element', '', 30000, 24)
+    vehicle.add_maintenance('Inspect Valve Clearance', 'Adjust if noisy.',
                             105000, 84)
-    vehicle.add_maintenance('Replace spark plugs', '', 105000, 84)
-    vehicle.add_maintenance('Replace timing belt', '', 105000, 84)
-    vehicle.add_maintenance('Replace balancer belt', '', 105000, 84)
-    vehicle.add_maintenance('Inspect water pump', '', 105000, 84)
-    vehicle.add_maintenance('Inspect and adjust drive belts', '', 30000, 24)
-    vehicle.add_maintenance('Inspect idle speed', '', 105000, 84)
-    vehicle.add_maintenance('Replace engine coolant', '', 120000, 120)
-    vehicle.add_maintenance('Replace transmission fluid', '', 120000, 72)
-    vehicle.add_maintenance('Inspect front and rear brakes', '', 15000, 12)
-    vehicle.add_maintenance('Replace brake fluid', '', 45000, 36)
-    vehicle.add_maintenance('Check parking brake adjustment', '', 15000, 12)
-    vehicle.add_maintenance('Replace air conditioning filter', '', 30000, 24)
+    vehicle.add_maintenance('Replace Spark Plugs', '', 105000, 84)
+    vehicle.add_maintenance('Replace Timing Belt', '', 105000, 84)
+    vehicle.add_maintenance('Replace Balancer Belt', '', 105000, 84)
+    vehicle.add_maintenance('Inspect Water Pump', '', 105000, 84)
+    vehicle.add_maintenance('Inspect and Adjust Drive Belts', '', 30000, 24)
+    vehicle.add_maintenance('Inspect Idle Speed', '', 105000, 84)
+    vehicle.add_maintenance('Replace Engine Coolant', '', 120000, 120)
+    vehicle.add_maintenance('Replace Transmission Fluid', '', 120000, 72)
+    vehicle.add_maintenance('Inspect Front and Rear Brakes', '', 15000, 12)
+    vehicle.add_maintenance('Replace Brake Fluid', '', 45000, 36)
+    vehicle.add_maintenance('Check Parking Brake Adjustment', '', 15000, 12)
+    vehicle.add_maintenance('Replace Air Conditioning Filter', '', 30000, 24)
     vehicle.add_maintenance(
-        'Rotate tires',
-        'Check tire inflation and condition at least once per month', 15000,
+        'Rotate Tires',
+        'Check tire inflation and condition at least once per month.', 15000,
         12)
 
     # Add estimated logs for the new maintenance events.
