@@ -74,7 +74,7 @@ def notify_users():
 def standard_schedule(vehicle):
     # Based on a 2001 Honda Accord
     vehicle.add_maintenance(
-        'Replace engine oil',
+        'Replace Engine Oil',
         "Check your vehicle's manual to determine the correct oil type.", 7500,
         12)
     vehicle.add_maintenance('Replace Oil Filter', '', 15000, 12)
