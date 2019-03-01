@@ -38,3 +38,7 @@ if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     scheduler.start()
 
     atexit.register(lambda: scheduler.shutdown())
+
+# Stop reloader process
+if __name__ == '__main__':
+    app.run(use_reloader=False)
