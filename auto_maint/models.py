@@ -15,6 +15,12 @@ class User(db.Model):
     blocked = db.Column(db.Boolean, default=False)
     vehicles = db.relationship('Vehicle', cascade='all,delete', backref='user')
 
+    def add(self):
+        """ Method to save the current user object to the DB. """
+        db.session.add(self)
+        db.session.commit()
+        return self
+
 
 class Vehicle(db.Model):
     """Vehicle of a user"""

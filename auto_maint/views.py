@@ -8,6 +8,21 @@ from auto_maint.helpers import email, login_required, standard_schedule
 from auto_maint.models import Log, Maintenance, Odometer, User, Vehicle
 
 
+@app.template_filter('mileage')
+def mileage_format(value):
+    """ Custom formatting for mileage. """
+    return "{:,} miles".format(value)
+
+
+@app.template_filter('age')
+def age_format(value):
+    """ Custom formatting for age, converting from days to years. """
+
+    value = value / 365.2524
+
+    return "{:,.2f} years".format(value)
+
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     """Index route"""
@@ -93,16 +108,7 @@ def register():
                     email=request.form['email'],
                     name=request.form['name'],
                     password_hash=generate_password_hash(
-                        request.form['password']))
-
-                # Add to DB session
-                db.session.add(user)
-                # Commit to the DB
-                db.session.commit()
-
-                # Obtain new user model from the db
-                user = User.query.filter(
-                    User.email == request.form['email']).first()
+                        request.form['password'])).add()
 
                 # Start a new user session
                 session["user_id"] = user.user_id
@@ -342,21 +348,6 @@ def maintenance(vehicle_id, maintenance_id):
         "maintenance.html", maintenance=lookup_maintenance, user=user)
 
 
-@app.template_filter('mileage')
-def mileage_format(value):
-    """ Custom formatting for mileage. """
-    return "{:,} miles".format(value)
-
-
-@app.template_filter('age')
-def age_format(value):
-    """ Custom formatting for age, converting from days to years. """
-
-    value = value / 365.2524
-
-    return "{:,.2f} years".format(value)
-
-
 @app.route("/odo/<reading_id>/delete", methods=['GET'])
 @login_required
 def delete_odometer(reading_id):
@@ -473,9 +464,9 @@ def edit_maintenance(maintenance_id):
             ed_maintenance.freq_miles = request.form['freq_miles']
             ed_maintenance.freq_months = request.form['freq_months']
 
-        flash(u'Maintenance information updated.', 'primary')
+            flash(u'Maintenance information updated.', 'primary')
 
-        db.session.commit()
+            db.session.commit()
 
         return redirect(
             f'/vehicle/{ed_maintenance.vehicle_id}/maintenance/{ed_maintenance.maintenance_id}'
