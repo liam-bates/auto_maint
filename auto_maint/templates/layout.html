@@ -41,12 +41,12 @@
             {% if session.user_id %}
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="/home">Home</a>
+                    <a class="nav-link" href="/home"><i class="fas fa-home"></i>  Home</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="/home" id="navbarDropdown" role="button"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Vehicles
+                        <i class="fas fa-car"></i> Vehicles
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         {% for vehicle in user.vehicles %}
@@ -61,7 +61,7 @@
             </ul>
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="/logout">Logout</a>
+                    <a class="nav-link" href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
                 </li>
             </ul>
             {% endif %}

@@ -95,7 +95,7 @@
                         max=2000000 required>
                 </div>
                 <div class="form-group col-md-6">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-car"></i> Add Mileage</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-tachometer-alt"></i> Add Mileage</button>
                 </div>
             </div>
         </form>
@@ -135,7 +135,7 @@
         {% else %}
         <p>You currently do not have any scheduled maintenance for this vehicle.</p>
         {% endif %}
-        <a class="btn btn-primary" href="/vehicle/{{ vehicle.vehicle_id }}/addmaint" role="button">Add to
+        <a class="btn btn-primary" href="/vehicle/{{ vehicle.vehicle_id }}/addmaint" role="button"><i class="far fa-calendar-plus"></i> Add to
             Schedule</a>
     </div>
 </div>

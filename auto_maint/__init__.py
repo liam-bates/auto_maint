@@ -17,8 +17,8 @@ db = SQLAlchemy(app)
 
 # Initiate session tracking type
 app.config["SESSION_TYPE"] = "sqlalchemy"
-mksess = Session(app)
-mksess.app.session_interface.db.create_all()
+sess = Session(app)
+sess.app.session_interface.db.create_all()
 
 # Initiate Flask-Migrate
 migrate = Migrate(app, db)
@@ -27,7 +27,3 @@ migrate = Migrate(app, db)
 app.config["SERVER_NAME"] = os.environ['SERVER_NAME']
 
 import auto_maint.views
-
-# Stop reloader process
-if __name__ == '__main__':
-    app.run(use_reloader=False)
