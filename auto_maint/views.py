@@ -6,6 +6,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from auto_maint import app, db
 from auto_maint.helpers import email, login_required, standard_schedule
 from auto_maint.models import Log, Maintenance, Odometer, User, Vehicle
+from auto_maint.forms import RegistrationForm
 
 
 @app.template_filter('mileage')
@@ -81,56 +82,41 @@ def index():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    """ Registration page to allow users to create an account on the app. """
+    """ Takes the user registration form and creates a new user if validated. """
 
-    # Check if a GET request and render registration page if so
-    if request.method == 'GET':
-        return render_template('register.html')
+    # Get the form data
+    form = RegistrationForm(request.form)
+    # Check if form validated
+    if request.method == 'POST' and form.validate():
+        # Create a new user object, with hashed password
+        print("made it here")
+        user = User(form.email.data,
+                    generate_password_hash(form.password.data), form.name.data)
+        # Flash thank you message
+        flash('Thanks for registering', 'success')
 
-    # Otherwise treat as POST and ensure user has submitted all required fields
-    if any(field is '' for field in [
-            request.form['email'], request.form['name'],
-            request.form['password'], request.form['confirm']
-    ]):
-        flash(u'Missing required field/s for new user account', 'danger')
+        # Start a new user session
+        session["user_id"] = user.user_id
+        db.session.commit()
 
-    else:
-        # Check that password and password match
-        if request.form['password'] != request.form['confirm']:
-            flash(u'Password and password confirmation do not match', 'danger')
-        else:
-            # Ensure no other registered users have that email
-            if User.query.filter(User.email == request.form['email']).count():
-                flash(u'Email already registered ', 'danger')
-            else:
-                # Create a new User object with a hashed password
-                user = User(
-                    email=request.form['email'],
-                    name=request.form['name'],
-                    password_hash=generate_password_hash(
-                        request.form['password'])).add()
+        # Generate Email message to send
+        msg = EmailMessage()
+        msg['Subject'] = 'Welcome to Auto Maintenance!'
+        msg['From'] = 'auto_maint@liam-bates.com'
+        msg['To'] = user.email
 
-                # Start a new user session
-                session["user_id"] = user.user_id
-                db.session.commit()
+        # Generate HTML for email
+        html = render_template('email/welcome.html', user=user)
+        msg.set_content(html, subtype='html')
 
-                # Generate Email message to send
-                msg = EmailMessage()
-                msg['Subject'] = 'Welcome to Auto Maintenance!'
-                msg['From'] = 'auto_maint@liam-bates.com'
-                msg['To'] = user.email
+        # Send email
+        email(msg)
 
-                # Generate HTML for email
-                html = render_template('email/welcome.html', user=user)
-                msg.set_content(html, subtype='html')
+        # Redirect to the home landing page
+        return redirect('/home')
 
-                # Send email
-                email(msg)
-
-                # Redirect to the vehicle landing page
-                return redirect('/home')
-
-    return redirect('/')
+    # Redirect to index
+    return render_template("register.html", form=form)
 
 
 @app.route('/home', methods=['GET', 'POST'])

@@ -10,16 +10,19 @@ class User(db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(256), unique=True, nullable=False)
     password_hash = db.Column(db.String(93), nullable=False)
-    name = db.Column(db.String(128), nullable=False)
+    name = db.Column(db.String(64), nullable=False)
     failed_logins = db.Column(db.SmallInteger, default=0, nullable=False)
-    blocked = db.Column(db.Boolean, default=False)
+    blocked = db.Column(db.Boolean, default=False, nullable=False)
     vehicles = db.relationship('Vehicle', cascade='all,delete', backref='user')
 
-    def add(self):
+    def __init__(self, email, password_hash, name):
         """ Method to save the current user object to the DB. """
+
+        self.email = email
+        self.password_hash = password_hash
+        self.name = name
         db.session.add(self)
         db.session.commit()
-        return self
 
 
 class Vehicle(db.Model):

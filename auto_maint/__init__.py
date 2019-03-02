@@ -5,6 +5,8 @@ from flask import Flask, session
 from flask_migrate import Migrate
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
+from flask_wtf.csrf import CSRFProtect
+
 
 app = Flask(__name__)
 
@@ -25,5 +27,9 @@ migrate = Migrate(app, db)
 
 # Set domain
 app.config["SERVER_NAME"] = os.environ['SERVER_NAME']
+
+app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
+
+csrf = CSRFProtect(app)
 
 import auto_maint.views
