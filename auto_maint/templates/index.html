@@ -25,7 +25,7 @@
                     {{ render_field(reg_form.confirm, False, help='Please do not use a password you use on other websites.') }}
             </div>
             <div class="modal-footer">
-                <button type="submit" id='uform' class="btn btn-primary">Register</button>
+                <button type="submit" id="RegBtn" class="btn btn-primary">Register</button>
             </div>
             </form>
         </div>
@@ -60,7 +60,7 @@
 </div>
 
 <script>
-    $('#uform').click(function (event) {
+    $('#RegBtn').click(function (event) {
         event.preventDefault();
         var url = "{{ url_for('register') }}";
         $.post(url, data = $('#registerForm').serialize(), function (data) {
@@ -70,9 +70,9 @@
             }
             else {
                 var html = $.parseHTML(data)
-                html = $(html).find(".modal-content")
+                html = $(html).find(".modal-body").html()
 
-                $('#regModal .modal-content').html(html);
+                $('#regModal .modal-body').html(html);
             }
         });
     })
