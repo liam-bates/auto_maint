@@ -1,6 +1,6 @@
 from email.message import EmailMessage
 
-from flask import flash, redirect, render_template, request, session
+from flask import flash, redirect, render_template, request, session, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from auto_maint import app, db
@@ -27,6 +27,8 @@ def age_format(value):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     """Index route"""
+    # Get the form data
+    reg_form = RegistrationForm(request.form)
     # If a GET request
     if request.method == 'GET':
         # Redirect to the home route if the user already logged in
@@ -34,7 +36,7 @@ def index():
             return redirect('/home')
 
         # Render the landing page
-        return render_template('index.html')
+        return render_template('index.html', reg_form=reg_form)
 
     # If a POST request ensure user provided email and password on form
     if not request.form['email'] or not request.form['password']:
@@ -87,7 +89,7 @@ def register():
     # Get the form data
     form = RegistrationForm(request.form)
     # Check if form validated
-    if request.method == 'POST' and form.validate():
+    if form.validate_on_submit():
         # Create a new user object, with hashed password
         print("made it here")
         user = User(form.email.data,
@@ -113,10 +115,10 @@ def register():
         email(msg)
 
         # Redirect to the home landing page
-        return redirect('/home')
+        return jsonify(status='ok')
 
-    # Redirect to index
-    return render_template("register.html", form=form)
+    # Render index page again with errors
+    return render_template('index.html', reg_form=form)
 
 
 @app.route('/home', methods=['GET', 'POST'])
