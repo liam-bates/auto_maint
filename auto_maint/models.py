@@ -19,7 +19,6 @@ class User(db.Model):
 
     def __init__(self, email, password_hash, name):
         """ Method to save the current user object to the DB. """
-
         self.email = email
         self.password_hash = password_hash
         self.name = name
@@ -52,13 +51,21 @@ class Vehicle(db.Model):
     __tablename__ = "vehicles"
     vehicle_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.ForeignKey("users.user_id"), nullable=False)
-    vehicle_name = db.Column(db.String(128), nullable=False)
+    vehicle_name = db.Column(db.String(64), nullable=False)
     vehicle_built = db.Column(db.Date, nullable=False)
     last_notification = db.Column(db.DateTime, nullable=True)
     odo_readings = db.relationship(
         'Odometer', cascade='all,delete', backref='vehicle')
     maintenance = db.relationship(
         'Maintenance', cascade='all,delete', backref='vehicle')
+    
+    def __init__(self, user_id, vehicle_name, vehicle_built):
+        """ Method to save the current user object to the DB. """
+        self.user_id = user_id
+        self.vehicle_name = vehicle_name
+        self.vehicle_built = vehicle_built
+        db.session.add(self)
+        db.session.commit()
 
     def est_mileage(self):
         """
@@ -126,11 +133,6 @@ class Vehicle(db.Model):
 
         return new_maintenance
 
-    def add(self):
-        """ Method to save the current vehicle object to the DB. """
-        db.session.add(self)
-        db.session.commit()
-        return self
 
     def delete(self):
         """ Method to delete the current vehicle object from the DB. """

@@ -1,7 +1,11 @@
+from datetime import date
+
 from flask_wtf import FlaskForm
 from werkzeug.security import check_password_hash
-from wtforms import PasswordField, StringField, ValidationError
-from wtforms.validators import DataRequired, Email, EqualTo, Length
+from wtforms import (BooleanField, PasswordField, StringField, ValidationError)
+from wtforms.fields.html5 import DateField, IntegerField
+from wtforms.validators import (DataRequired, Email, EqualTo, Length,
+                                NumberRange)
 
 from auto_maint.models import User
 
@@ -41,6 +45,14 @@ def pw_authenticate(form, field):
             user.successful_login()
 
 
+def logical_date(form, field):
+    """ Ensure provided date isn't in the future or prior to 1900. """
+    if field.data > date.today():
+        raise ValidationError('Date cannot be in the future.')
+    if field.data < date(1900, 1, 1):
+        raise ValidationError('Date cannot be earlier than year 1900.')
+
+
 class RegistrationForm(FlaskForm):
     """ Registration form for a new user. """
     email = StringField(
@@ -72,3 +84,17 @@ class LoginForm(FlaskForm):
         description='Email')
     password = PasswordField(
         'Password', [DataRequired(), pw_authenticate], description='Password')
+
+
+class AddVehicleForm(FlaskForm):
+    """ Form to add new vehicle. """
+    name = StringField(
+        'Vehicle Name', [DataRequired(), Length(1, 64)],
+        description="Your Vehicle's Name")
+    manufactured = DateField('Date Manufactured',
+                             [DataRequired(), logical_date])
+    current_mileage = IntegerField(
+        'Current Mileage',
+        [DataRequired(), NumberRange(1, 1000000)],
+    )
+    standard_schedule = BooleanField('Add Standard Maintenance Schedule')

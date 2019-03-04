@@ -3,6 +3,59 @@
 {% block title %}Vehicles{% endblock %}
 
 {% block main %}
+
+<div class="modal fade" id="addvehicleModal" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Vehicle</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Please enter your vehicle's basic information below.</p>
+                {% from "_formbuilder.html" import render_field %}
+                <form method="post" id="addvehicleForm" action="{{ url_for('home') }}">
+                    {{ vehicle_form.csrf_token }}
+                    {{ render_field(vehicle_form.name) }}
+                    {{ render_field(vehicle_form.manufactured, help="This can be found within your vehicle's registration details.") }}
+                    {{ render_field(vehicle_form.current_mileage, placeholder="Your Vehicle's Current Mileage") }}
+                    <div class="form-check">
+                        {{ vehicle_form.standard_schedule(class="form-check-input") }}
+                        {{ vehicle_form.standard_schedule.label(class="form-check-label") }}
+                        <small id="standardHelp" class="form-text text-muted">Checking this box will add a standard set
+                            of maintenance tasks for your vehicle that you can edit further. These are based on an
+                            average
+                            US vehicle.
+                            Always check your vehicle's manual for the correct maintenance schedule and edit as
+                            necessary.</small>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" id="AddVehicleBtn" class="btn btn-primary">Add Vehicle</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    $('#AddVehicleBtn').click(function (event) {
+        event.preventDefault();
+        var url = "{{ url_for('home') }}";
+        $.post(url, data = $('#addvehicleForm').serialize(), function (data) {
+            if (data.status == 'ok') {
+                $('#addvehicle').modal('hide');
+                location.reload();
+            }
+            else {
+                var html = $.parseHTML(data)
+                html = $(html).find(".modal-body").html()
+
+                $('#addvehicleModal .modal-body').html(html);
+            }
+        });
+    })
+</script>
 {% if vehicles %}
 <h1 class="mt-3">Vehicles</h1>
 <p>Below is a table showing all vehicles on this account and their present status. To edit or find out more about a
@@ -41,5 +94,6 @@
     your vehicle.</p>
 <p>To begin add a vehicle: </p>
 {% endif %}
-<a href="/addvehicle" class="btn btn btn-primary" role="button"><i class="fas fa-plus"></i> Add a Vehicle</a>
+<button class="btn btn-primary" data-toggle="modal" data-target="#addvehicleModal"><i class="fas fa-plus"></i> Add
+    Vehicle</button>
 {% endblock %}

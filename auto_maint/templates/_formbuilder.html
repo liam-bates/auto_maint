@@ -1,17 +1,17 @@
-{% macro render_field(field, show_label=True, help='') %}
+{% macro render_field(field, show_label=True, help='', placeholder=field.description) %}
 <div class="form-group">
   {% if show_label %}
   {{ field.label }}
   {% endif %}
   {% if field.errors %}
-  {{ field(class_='form-control is-invalid', placeholder=field.description) }}
+  {{ field(class_='form-control is-invalid', placeholder=placeholder) }}
   <div class="invalid-feedback">
     {% for error in field.errors %}
     {{ error }}
     {% endfor %}
   </div>
   {% else %}
-  {{ field(class_='form-control', placeholder=field.description) }}
+  {{ field(class_='form-control', placeholder=placeholder) }}
   <small id="{{ field.id }}Help" class="form-text text-muted">{{ help }}</small>
   {% endif %}
 </div>

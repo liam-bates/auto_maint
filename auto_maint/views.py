@@ -4,7 +4,7 @@ from flask import flash, jsonify, redirect, render_template, request, session
 from werkzeug.security import generate_password_hash
 
 from auto_maint import app, db
-from auto_maint.forms import RegistrationForm, LoginForm
+from auto_maint.forms import RegistrationForm, LoginForm, AddVehicleForm
 from auto_maint.helpers import email, login_required, standard_schedule
 from auto_maint.models import Log, Maintenance, Odometer, User, Vehicle
 
@@ -34,7 +34,7 @@ def index():
     # If login form validated move to home page
     if login_form.validate_on_submit():
         return redirect('/home')
-    
+
     # Redirect to the home route if the user already logged in
     if session.get("user_id"):
         return redirect('/home')
@@ -54,7 +54,6 @@ def register():
     # Check if form validated
     if form.validate_on_submit():
         # Create a new user object, with hashed password
-        print("made it here")
         user = User(form.email.data,
                     generate_password_hash(form.password.data), form.name.data)
         # Flash thank you message
@@ -77,58 +76,50 @@ def register():
         # Send email
         email(msg)
 
-        # Redirect to the home landing page
+        # Confirm to browser that all okay
         return jsonify(status='ok')
 
     # Render index page again with errors
     return render_template('index.html', reg_form=form)
 
 
-@app.route('/home', methods=['GET', 'POST'])
+@app.route('/home', methods=['POST', 'GET'])
 @login_required
 def home():
     """ Home landing page for users. Showing a table of their vehicles """
+    vehicle_form = AddVehicleForm(request.form)
 
+    if vehicle_form.validate_on_submit():
+        new_vehicle = Vehicle(session["user_id"], vehicle_form.name.data, vehicle_form.manufactured.data)
+         # Use method to add new odometer reading for the vehicle
+        new_vehicle.add_odom_reading(vehicle_form.current_mileage.data)
+        
+        if vehicle_form.standard_schedule.data:
+            standard_schedule(new_vehicle)
+        
+        flash(f'{new_vehicle.vehicle_name} added to your vehicle list.',
+              'success')
+        # Confirm to browser that all okay
+        return jsonify(status='ok')
     # Query db for users info and vehicles
     vehicles = Vehicle.query.filter(
         Vehicle.user_id == session["user_id"]).all()
     user = User.query.filter(User.user_id == session["user_id"]).first()
 
-    return render_template("home.html", vehicles=vehicles, user=user)
+    return render_template(
+        "home.html", vehicles=vehicles, user=user, vehicle_form=vehicle_form)
 
 
-@app.route('/addvehicle', methods=['GET', 'POST'])
+@app.route('/addvehicle', methods=['POST'])
 @login_required
 def add_vehicle():
     """ Simple page to allow user to create a new vehicle in the app. """
 
-    # If a GET request send back form page
-    if request.method == 'GET':
-        # Query DB for user
-        user = User.query.filter(User.user_id == session["user_id"]).first()
-        return render_template("add_vehicle.html", user=user)
+    form = AddVehicleForm(request.form)
 
-    # If a POST request check that all fields completed, otherwise flash error
-    if any(field is '' for field in [
-            request.form['vehicle_name'], request.form['date_manufactured'],
-            request.form['mileage']
-    ]):
-        flash(u'Missing required field/s when adding new vehicle.', 'danger')
-    else:
-        # Create a new vehicle object and add to db using add method
-        new_vehicle = Vehicle(
-            user_id=session["user_id"],
-            vehicle_name=request.form['vehicle_name'],
-            vehicle_built=request.form['date_manufactured']).add()
-
-        # Use method to add new odometer reading for the vehicle
-        new_vehicle.add_odom_reading(request.form['mileage'])
-        if 'standard' in request.form:
-            standard_schedule(new_vehicle)
-        flash(f'{new_vehicle.vehicle_name} added to your vehicle list.',
-              'primary')
-    # Return to the landing screen
-    return redirect('/home')
+    
+    
+    return render_template("home.html", vehicle_form=form)
 
 
 @app.route('/logout', methods=['GET'])
