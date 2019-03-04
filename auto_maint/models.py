@@ -1,6 +1,8 @@
 """ auto_maint app models defined """
 import datetime
 
+from flask import session
+
 from auto_maint import db
 
 
@@ -22,6 +24,26 @@ class User(db.Model):
         self.password_hash = password_hash
         self.name = name
         db.session.add(self)
+        db.session.commit()
+
+    def successful_login(self):
+        """ Method to record and handle a successful login and creation of
+        session. """
+        # Save user id as session user id
+        session["user_id"] = self.user_id
+        # Reset failed login attempts
+        self.failed_logins = 0
+        # Commit to DB
+        db.session.commit()
+
+    def failed_login(self):
+        """ Method to record a failed login. """
+        # Record the failed login
+        self.failed_logins += 1
+        # Check if over block limit
+        if self.failed_logins >= 5:
+            self.blocked = True
+        # Commit to db
         db.session.commit()
 
 

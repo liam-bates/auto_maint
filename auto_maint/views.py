@@ -1,12 +1,12 @@
 from email.message import EmailMessage
 
-from flask import flash, redirect, render_template, request, session, jsonify
-from werkzeug.security import check_password_hash, generate_password_hash
+from flask import flash, jsonify, redirect, render_template, request, session
+from werkzeug.security import generate_password_hash
 
 from auto_maint import app, db
+from auto_maint.forms import RegistrationForm, LoginForm
 from auto_maint.helpers import email, login_required, standard_schedule
 from auto_maint.models import Log, Maintenance, Odometer, User, Vehicle
-from auto_maint.forms import RegistrationForm
 
 
 @app.template_filter('mileage')
@@ -24,62 +24,20 @@ def age_format(value):
     return "{:,.2f} years".format(value)
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
 def index():
-    """Index route"""
+    """Index view."""
     # Get the form data
     reg_form = RegistrationForm(request.form)
-    # If a GET request
-    if request.method == 'GET':
-        # Redirect to the home route if the user already logged in
-        if session.get("user_id"):
-            return redirect('/home')
+    login_form = LoginForm(request.form)
 
-        # Render the landing page
-        return render_template('index.html', reg_form=reg_form)
+    # Redirect to the home route if the user already logged in
+    if session.get("user_id"):
+        return redirect('/home')
 
-    # If a POST request ensure user provided email and password on form
-    if not request.form['email'] or not request.form['password']:
-        flash(u'No username and/or password provided', 'danger')
-
-    else:
-        # Query the DB for a matching email address and save it as user object
-        user = User.query.filter(User.email == request.form['email']).first()
-
-        # Check if user
-        if not user:
-            flash(u'Incorrect username and/or password provided', 'danger')
-        else:
-            # If user is blocked flash a message to warn them
-            if user.blocked:
-                flash(u'Account Blocked', 'danger')
-            else:
-                # Check that password correct
-                if not check_password_hash(user.password_hash,
-                                           request.form['password']):
-                    # Record failed attempt
-                    user.failed_logins += 1
-                    # Block the user if this is their 5th attempt
-                    if user and user.failed_logins >= 5:
-                        user.blocked = True
-                    # Commit to DB
-                    db.session.commit()
-                    # Return error
-                    flash(u'Incorrect username and/or password provided',
-                          'danger')
-                # Correct password provided
-                else:
-                    # Save user id as session user id
-                    session["user_id"] = user.user_id
-                    # Reset failed login attempts
-                    user.failed_logins = 0
-                    # Commit to DB
-                    db.session.commit()
-                    # Direct to home landing page
-                    return redirect('/home')
-
-    # Return index page again
-    return redirect('/')
+    # Otherwise render the index page
+    return render_template(
+        'index.html', login_form=login_form, reg_form=reg_form)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -95,7 +53,7 @@ def register():
         user = User(form.email.data,
                     generate_password_hash(form.password.data), form.name.data)
         # Flash thank you message
-        flash('Thanks for registering', 'success')
+        flash('Account succesfully created.', 'success')
 
         # Start a new user session
         session["user_id"] = user.user_id
@@ -119,6 +77,23 @@ def register():
 
     # Render index page again with errors
     return render_template('index.html', reg_form=form)
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    """Login user. """
+    # Get the form data
+    login_form = LoginForm(request.form)
+    reg_form = RegistrationForm(request.form)
+
+    # If validated move to home page
+    if login_form.validate_on_submit():
+        return redirect('/home')
+
+    # Otherwise render the index page
+
+    return render_template(
+        'index.html', login_form=login_form, reg_form=reg_form)
 
 
 @app.route('/home', methods=['GET', 'POST'])
