@@ -24,7 +24,7 @@ def user_authenticate(form, field):
         if user.blocked:
             raise ValidationError('Account Blocked.')
     else:
-         raise ValidationError('Unknown Email provided.')
+        raise ValidationError('Unknown Email provided.')
 
 
 def pw_authenticate(form, field):
@@ -39,8 +39,7 @@ def pw_authenticate(form, field):
         # Record a succesful login
         else:
             user.successful_login()
-    
-        
+
 
 class RegistrationForm(FlaskForm):
     """ Registration form for a new user. """
@@ -69,5 +68,7 @@ class RegistrationForm(FlaskForm):
 class LoginForm(FlaskForm):
     """ Form to login app users. """
     email = StringField(
-        'Email', [DataRequired(), Email(), user_authenticate], description='Email')
-    password = PasswordField('Password', [DataRequired(), pw_authenticate], description='Password')
+        'Email', [DataRequired(), Email(), user_authenticate],
+        description='Email')
+    password = PasswordField(
+        'Password', [DataRequired(), pw_authenticate], description='Password')

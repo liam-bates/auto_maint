@@ -24,13 +24,17 @@ def age_format(value):
     return "{:,.2f} years".format(value)
 
 
-@app.route('/', methods=['GET'])
+@app.route('/', methods=['GET', 'POST'])
 def index():
     """Index view."""
     # Get the form data
     reg_form = RegistrationForm(request.form)
     login_form = LoginForm(request.form)
 
+    # If login form validated move to home page
+    if login_form.validate_on_submit():
+        return redirect('/home')
+    
     # Redirect to the home route if the user already logged in
     if session.get("user_id"):
         return redirect('/home')
@@ -42,7 +46,8 @@ def index():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    """ Takes the user registration form and creates a new user if validated. """
+    """ Takes the user registration form and creates a new user if
+    validated. """
 
     # Get the form data
     form = RegistrationForm(request.form)
@@ -77,23 +82,6 @@ def register():
 
     # Render index page again with errors
     return render_template('index.html', reg_form=form)
-
-
-@app.route('/login', methods=['POST'])
-def login():
-    """Login user. """
-    # Get the form data
-    login_form = LoginForm(request.form)
-    reg_form = RegistrationForm(request.form)
-
-    # If validated move to home page
-    if login_form.validate_on_submit():
-        return redirect('/home')
-
-    # Otherwise render the index page
-
-    return render_template(
-        'index.html', login_form=login_form, reg_form=reg_form)
 
 
 @app.route('/home', methods=['GET', 'POST'])
