@@ -55,6 +55,15 @@
             }
         });
     })
+
+
+    $(document).ready(function () {
+
+        if (window.location.href.indexOf('#addvehicleModal') != -1) {
+            $('#addvehicleModal').modal('show');
+        }
+
+    });
 </script>
 {% if vehicles %}
 <h1 class="mt-3">Vehicles</h1>

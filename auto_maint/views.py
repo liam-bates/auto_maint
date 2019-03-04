@@ -86,7 +86,8 @@ def register():
 @app.route('/home', methods=['POST', 'GET'])
 @login_required
 def home():
-    """ Home landing page for users. Showing a table of their vehicles """
+    """ Home landing page for users. Showing a table of their vehicles. Also 
+    allows the creation of new vehicles via a modal form. """
     vehicle_form = AddVehicleForm(request.form)
 
     if vehicle_form.validate_on_submit():
