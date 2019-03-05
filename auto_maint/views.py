@@ -4,7 +4,8 @@ from flask import flash, jsonify, redirect, render_template, request, session
 from werkzeug.security import generate_password_hash
 
 from auto_maint import app, db
-from auto_maint.forms import RegistrationForm, LoginForm, AddVehicleForm
+from auto_maint.forms import (AddVehicleForm, LoginForm, NewOdometerForm,
+                              RegistrationForm, EditVehicleForm)
 from auto_maint.helpers import email, login_required, standard_schedule
 from auto_maint.models import Log, Maintenance, Odometer, User, Vehicle
 
@@ -86,18 +87,19 @@ def register():
 @app.route('/home', methods=['POST', 'GET'])
 @login_required
 def home():
-    """ Home landing page for users. Showing a table of their vehicles. Also 
+    """ Home landing page for users. Showing a table of their vehicles. Also
     allows the creation of new vehicles via a modal form. """
     vehicle_form = AddVehicleForm(request.form)
 
     if vehicle_form.validate_on_submit():
-        new_vehicle = Vehicle(session["user_id"], vehicle_form.name.data, vehicle_form.manufactured.data)
-         # Use method to add new odometer reading for the vehicle
+        new_vehicle = Vehicle(session["user_id"], vehicle_form.name.data,
+                              vehicle_form.manufactured.data)
+        # Use method to add new odometer reading for the vehicle
         new_vehicle.add_odom_reading(vehicle_form.current_mileage.data)
-        
+
         if vehicle_form.standard_schedule.data:
             standard_schedule(new_vehicle)
-        
+
         flash(f'{new_vehicle.vehicle_name} added to your vehicle list.',
               'success')
         # Confirm to browser that all okay
@@ -111,22 +113,10 @@ def home():
         "home.html", vehicles=vehicles, user=user, vehicle_form=vehicle_form)
 
 
-@app.route('/addvehicle', methods=['POST'])
-@login_required
-def add_vehicle():
-    """ Simple page to allow user to create a new vehicle in the app. """
-
-    form = AddVehicleForm(request.form)
-
-    
-    
-    return render_template("home.html", vehicle_form=form)
-
-
 @app.route('/logout', methods=['GET'])
 @login_required
 def logout():
-    """Log user out"""
+    """ Log user out. """
 
     # Forget any user_id
     session.clear()
@@ -158,7 +148,8 @@ def delete_vehicle(vehicle_id):
 @app.route("/vehicle/<vehicle_id>", methods=['GET', 'POST'])
 @login_required
 def vehicle(vehicle_id):
-    """Provides an overview of a vehicle record. Allows editing and deletion."""
+    """ Provides an overview of a vehicle record and allows posting of new
+    odometer readings. """
 
     # Pull vehicle from db using id
     lookup_vehicle = Vehicle.query.filter(
@@ -166,35 +157,39 @@ def vehicle(vehicle_id):
 
     # Verify the user has access to the record and that it exists
     if not lookup_vehicle or lookup_vehicle.user_id != session['user_id']:
-        flash(u'Unauthorized access to vehicle record', 'danger')
+        flash(u'Unauthorized access to vehicle record.', 'danger')
         return redirect('/home')
 
-    # Check is a POST has been made from odometer form
-    if request.method == 'POST':
-        # Ensure value given
-        if not request.form['mileage']:
-            flash(f'No mileage reading provided.', 'danger')
-        else:
-            mileage = int(request.form['mileage'])
-            # Ensure that new mileage is higher than previous
-            if mileage > lookup_vehicle.last_odometer().reading:
-                lookup_vehicle.add_odom_reading(mileage)
-                flash(f'Mileage reading added.', 'primary')
-            # Otherwise return an error
-            else:
-                flash('Unable to add mileage as it is lower than a previous '\
-                    'reading.', 'danger')
+    # Forms
+    odometer_form = NewOdometerForm(request.form)
+    edit_form = EditVehicleForm(request.form)
 
-    # Query DB for user's info
-    user = User.query.filter(User.user_id == session["user_id"]).first()
+    # Send vehicle object back to the Odometer form for validation
+    odometer_form.vehicle.data = lookup_vehicle
+
+    # Set existing values for the lookup form.
+    edit_form.name.data = lookup_vehicle.vehicle_name
+    edit_form.manufactured.data = lookup_vehicle.vehicle_built
+
+    # Check if POST / Validated
+    if odometer_form.validate_on_submit():
+        # Add the reading
+        lookup_vehicle.add_odom_reading(odometer_form.reading.data)
+        flash(f'New mileage reading added.', 'success')
+
     # Render vehicle template
-    return render_template('vehicle.html', vehicle=lookup_vehicle, user=user)
+    return render_template(
+        'vehicle.html',
+        vehicle=lookup_vehicle,
+        user=lookup_vehicle.user,
+        odometer_form=odometer_form,
+        edit_form=edit_form)
 
 
 @app.route("/vehicle/<vehicle_id>/addmaint", methods=['GET', 'POST'])
 @login_required
 def add_maint(vehicle_id):
-    """Allow user to add a maintenance schedule event."""
+    """ Allow user to add a maintenance schedule event. """
 
     # Pull vehicle from db using id
     lookup_vehicle = Vehicle.query.filter(
@@ -303,7 +298,7 @@ def delete_odometer(reading_id):
     if del_odom.vehicle.user_id == session["user_id"]:
         # Test if it is the last odometer reading.
         if len(del_odom.vehicle.odo_readings) <= 1:
-            flash('Cannot delete last odomter reading. Add another before '\
+            flash('Cannot delete last odometer reading. Add another before '\
                 'attempting to remove the last reading.', 'danger')
         else:
             del_odom.delete()

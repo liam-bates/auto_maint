@@ -6,7 +6,7 @@
 
 <h1 class="mt-3">{{ vehicle.vehicle_name }}</h1>
 <a class="btn btn-secondary" href="/home" role="button"><i class="fas fa-arrow-left"></i> Back</a>
-<button class="btn btn-primary" data-toggle="modal" data-target="#EditModal"><i class="fas fa-pen"></i>
+<button class="btn btn-primary" data-toggle="modal" data-target="#editModal"><i class="fas fa-pen"></i>
     Edit</a></button>
 <button class="btn btn-danger" data-toggle="modal" data-target="#DeleteModal"><i class="fas fa-trash-alt"></i>
     Delete</a></button>
@@ -38,33 +38,26 @@
         </div>
     </div>
 
-    <div class="modal fade" id="EditModal" role="dialog">
+    <div class="modal fade" id="editModal" role="dialog">
         <div class="modal-dialog">
             <!-- Modal content-->
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Edit Vehicle</h4>
+                    <h4 class="modal-title">Add Vehicle</h4>
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <form method="post" action="/vehicle/edit/{{ vehicle.vehicle_id }}">
-                        <div class="form-group">
-                            <label for="vehicle_name">Vehicle Name</label>
-                            <input type="text" class="form-control" name="vehicle_name"
-                                value="{{ vehicle.vehicle_name }}" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="name">Date Manufactured</label>
-                            <input type="date" class="form-control" name="date_manufactured"
-                                value="{{ vehicle.vehicle_built }}" required>
-                            <small id="nameHelp" class="form-text text-muted">This can be found within your vehicle's
-                                registration details.</small>
-                        </div>
+                    <p>Make changes to your vehicle's basic information below.</p>
+                    {% from "_formbuilder.html" import render_field %}
+                    <form method="post" id="addvehicleForm" action="{{ url_for('home') }}">
+                        {{ edit_form.csrf_token }}
+                        {{ render_field(edit_form.name) }}
+                        {{ render_field(edit_form.manufactured, help="This can be found within your vehicle's registration details.") }}
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Edit Vehicle</button>
-                    </form>
+                    <button type="submit" id="EditVehicleBtn" class="btn btn-primary">Edit Vehicle</button>
                 </div>
+                </form>
             </div>
         </div>
     </div>
@@ -88,14 +81,24 @@
         </table>
 
         <form method="post">
-            <label for="mileage">Current Mileage</label>
+            {{ odometer_form.reading.label }}
             <div class="form-row">
                 <div class="form-group col-md-6">
-                    <input type="number" class="form-control" name="mileage" placeholder="Enter current mileage" min=1
-                        max=2000000 required>
+                    {{ odometer_form.csrf_token }}
+                    {% if odometer_form.errors %}
+                    {{ odometer_form.reading(class_='form-control is-invalid', placeholder='Enter Current Mileage') }}
+                    <div class="invalid-feedback">
+                        {% for error in odometer_form.reading.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    {{ odometer_form.reading(class="form-control", placeholder='Enter Current Mileage') }}
+                    {% endif %}
                 </div>
                 <div class="form-group col-md-6">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-tachometer-alt"></i> Add Mileage</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-tachometer-alt"></i> Add
+                        Mileage</button>
                 </div>
             </div>
         </form>
@@ -135,7 +138,8 @@
         {% else %}
         <p>You currently do not have any scheduled maintenance for this vehicle.</p>
         {% endif %}
-        <a class="btn btn-primary" href="/vehicle/{{ vehicle.vehicle_id }}/addmaint" role="button"><i class="far fa-calendar-plus"></i> Add to
+        <a class="btn btn-primary" href="/vehicle/{{ vehicle.vehicle_id }}/addmaint" role="button"><i
+                class="far fa-calendar-plus"></i> Add to
             Schedule</a>
     </div>
 </div>

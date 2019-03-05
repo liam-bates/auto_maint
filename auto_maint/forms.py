@@ -2,12 +2,13 @@ from datetime import date
 
 from flask_wtf import FlaskForm
 from werkzeug.security import check_password_hash
-from wtforms import (BooleanField, PasswordField, StringField, ValidationError)
+from wtforms import (BooleanField, PasswordField, StringField, ValidationError,
+                     HiddenField)
 from wtforms.fields.html5 import DateField, IntegerField
 from wtforms.validators import (DataRequired, Email, EqualTo, Length,
                                 NumberRange)
 
-from auto_maint.models import User
+from auto_maint.models import User, Vehicle
 
 
 def available(form, field):
@@ -53,6 +54,15 @@ def logical_date(form, field):
         raise ValidationError('Date cannot be earlier than year 1900.')
 
 
+def greater_odometer(form, field):
+    """ Ensure odometer reading provided is higher than most recent. """
+    print(form.vehicle.data)
+    # Ensure that new mileage is higher than previous
+    if field.data < form.vehicle.data.last_odometer().reading:
+        raise ValidationError(
+            'New mileage reading must be higher than a previous reading.')
+
+
 class RegistrationForm(FlaskForm):
     """ Registration form for a new user. """
     email = StringField(
@@ -95,6 +105,39 @@ class AddVehicleForm(FlaskForm):
                              [DataRequired(), logical_date])
     current_mileage = IntegerField(
         'Current Mileage',
-        [DataRequired(), NumberRange(1, 1000000)],
-    )
+        [DataRequired(), NumberRange(1, 2000000)])
     standard_schedule = BooleanField('Add Standard Maintenance Schedule')
+
+
+class EditVehicleForm(FlaskForm):
+    """ Form to edit vehicle. """
+    name = StringField(
+        'Vehicle Name', [DataRequired(), Length(1, 64)],
+        description="Your Vehicle's Name")
+    manufactured = DateField('Date Manufactured',
+                             [DataRequired(), logical_date])
+
+    # vehicle = Vehicle.query.filter(Vehicle.id == form.email.data).first()
+    # vehicle.last_odometer()
+
+
+class NewOdometerForm(FlaskForm):
+    """ Form to add new Odometer readings """
+    # Allows passing back of vehicle object for validation.
+    vehicle = HiddenField()
+    reading = IntegerField(
+        'Current Mileage',
+        [DataRequired(),
+         NumberRange(1, 2000000), greater_odometer])
+
+
+class NewMaintenanceForm(FlaskForm):
+    """ Form to create a new maintenance task. """
+
+
+class EditMaintenanceForm(FlaskForm):
+    """ Form to allow editing of maintenance tasks. """
+
+
+class NewLogForm(FlaskForm):
+    """ Form to allow creation of new maintenance task logs. """
