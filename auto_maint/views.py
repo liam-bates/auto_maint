@@ -114,18 +114,6 @@ def home():
         "home.html", vehicles=vehicles, user=user, vehicle_form=vehicle_form)
 
 
-@app.route('/logout', methods=['GET'])
-@login_required
-def logout():
-    """ Log user out. """
-
-    # Forget any user_id
-    session.clear()
-
-    # Redirect user to landing page
-    return redirect("/")
-
-
 @app.route("/vehicle/<vehicle_id>", methods=['GET', 'POST'])
 @login_required
 def vehicle(vehicle_id):
@@ -221,9 +209,33 @@ def delete_vehicle(vehicle_id):
               'primary')
     # If not flash an error
     else:
-        flash('Unauthorized access to vehicle record.', 'primary')
+        flash('Unauthorized access to vehicle record.', 'danger')
 
     return redirect('/home')
+
+
+@app.route("/odo/<reading_id>/delete", methods=['GET'])
+@login_required
+def delete_odometer(reading_id):
+    """Takes a URL and deletes the odometer, by the ID provided"""
+
+    # Query the db for a matching vehicle
+    del_odom = Odometer.query.filter_by(reading_id=reading_id).first()
+
+    # Test whatever was returned to see if the vehicle is owned by the user
+    if del_odom.vehicle.user_id == session["user_id"]:
+        # Test if it is the last odometer reading.
+        if len(del_odom.vehicle.odo_readings) <= 1:
+            flash('Cannot delete last odometer reading. Add another before '\
+                'attempting to remove the last reading.', 'danger')
+        else:
+            del_odom.delete()
+            flash(f'Odometer reading deleted.', 'primary')
+    # If not flash an error
+    else:
+        flash('Unauthorized access to odometer record.', 'danger')
+
+    return redirect(f'/vehicle/{del_odom.vehicle.vehicle_id}')
 
 
 @app.route("/maintenance/<maintenance_id>", methods=['GET', 'POST'])
@@ -251,27 +263,28 @@ def maintenance(maintenance_id):
                                    log_form.log_miles.data,
                                    log_form.log_notes.data)
 
-        flash(u'New log entry added.', 'primary')
+        flash(u'New log entry added.', 'success')
 
-    elif edit_form.submit_edit.data and edit_form.validate_on_submit():
+        return jsonify(status='ok')
+
+    if edit_form.submit_edit.data and edit_form.validate_on_submit():
         # Update fields.
         lookup_maintenance.name = edit_form.name.data
         lookup_maintenance.description = edit_form.description.data
         lookup_maintenance.freq_miles = edit_form.freq_miles.data
         lookup_maintenance.freq_months = edit_form.freq_months.data
 
-        flash(u'Maintenance information updated.', 'primary')
+        flash(u'Maintenance information updated.', 'success')
 
         db.session.commit()
 
         return jsonify(status='ok')
 
-    else:
-        # Set existing values for the edit form.
-        edit_form.name.data = lookup_maintenance.name
-        edit_form.description.data = lookup_maintenance.description
-        edit_form.freq_miles.data = lookup_maintenance.freq_miles
-        edit_form.freq_months.data = lookup_maintenance.freq_months
+    # Set existing values for the edit form.
+    edit_form.name.data = lookup_maintenance.name
+    edit_form.description.data = lookup_maintenance.description
+    edit_form.freq_miles.data = lookup_maintenance.freq_miles
+    edit_form.freq_months.data = lookup_maintenance.freq_months
 
     return render_template(
         "maintenance.html",
@@ -279,30 +292,6 @@ def maintenance(maintenance_id):
         user=lookup_maintenance.vehicle.user,
         edit_form=edit_form,
         log_form=log_form)
-
-
-@app.route("/odo/<reading_id>/delete", methods=['GET'])
-@login_required
-def delete_odometer(reading_id):
-    """Takes a URL and deletes the odometer, by the ID provided"""
-
-    # Query the db for a matching vehicle
-    del_odom = Odometer.query.filter_by(reading_id=reading_id).first()
-
-    # Test whatever was returned to see if the vehicle is owned by the user
-    if del_odom.vehicle.user_id == session["user_id"]:
-        # Test if it is the last odometer reading.
-        if len(del_odom.vehicle.odo_readings) <= 1:
-            flash('Cannot delete last odometer reading. Add another before '\
-                'attempting to remove the last reading.', 'danger')
-        else:
-            del_odom.delete()
-            flash(f'Odometer reading deleted.', 'primary')
-    # If not flash an error
-    else:
-        flash('Unauthorized access to odometer record.', 'primary')
-
-    return redirect(f'/vehicle/{del_odom.vehicle.vehicle_id}')
 
 
 @app.route("/maintenance/<maintenance_id>/delete", methods=['GET'])
@@ -320,7 +309,7 @@ def delete_maintenance(maintenance_id):
         flash(f'{del_maintenance.name} maintenance task deleted.', 'primary')
     # If not flash an error
     else:
-        flash('Unauthorized access to maintenance record.', 'primary')
+        flash('Unauthorized access to maintenance record.', 'danger')
 
     return redirect(f'/vehicle/{del_maintenance.vehicle_id}')
 
@@ -344,3 +333,15 @@ def delete_log(log_id):
     return redirect(
         f'/vehicle/{del_log.maintenance.vehicle_id}/maintenance/{del_log.maintenance_id}'
     )
+
+
+@app.route('/logout', methods=['GET'])
+@login_required
+def logout():
+    """ Log user out. """
+
+    # Forget any user_id
+    session.clear()
+
+    # Redirect user to landing page
+    return redirect("/")

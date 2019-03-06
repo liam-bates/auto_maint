@@ -61,6 +61,30 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="LogModal" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Edit Maintenance</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    {% from "_formbuilder.html" import render_field %}
+                    <form method="post" id="LogForm">
+                        {{ edit_form.csrf_token }}
+                        {{ render_field(log_form.log_date) }}
+                        {{ render_field(log_form.log_miles, placeholder="Mileage when undertaken") }}
+                        {{ render_field(log_form.log_notes) }}
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" id="submit_log">Add Log</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 <script>
     $('#submit_edit').click(function (event) {
         event.preventDefault();
@@ -79,6 +103,26 @@
                 html = $(html).find("#EditModal .modal-body").html()
 
                 $('#EditModal .modal-body').html(html);
+            }
+        });
+    })
+    $('#submit_log').click(function (event) {
+        event.preventDefault();
+
+        var data = $('#LogForm').serialize()
+        data += '&submit_log=Add+Log'
+
+        var url = "{{ url_for('maintenance', maintenance_id=maintenance.maintenance_id) }}";
+        $.post(url, data, function (data) {
+            if (data.status == 'ok') {
+                $('#LogModal').modal('hide');
+                location.reload();
+            }
+            else {
+                var html = $.parseHTML(data)
+                html = $(html).find("#LogModal .modal-body").html()
+
+                $('#LogModal .modal-body').html(html);
             }
         });
     })
@@ -104,14 +148,6 @@
 {% else %}
 <p>There are currently no record of any previous maintenance being performed.</p>
 {% endif %}
-<h2>New Log Entry</h2 class="mt-2">
-<div class="col">
-    <form method="post">
-        {{ edit_form.csrf_token }}
-        {{ render_field(log_form.log_date) }}
-        {{ render_field(log_form.log_miles) }}
-        {{ render_field(log_form.log_notes) }}
-        <button type="submit" class="btn btn-primary" name="submit_log" value="Add Log">Add Log</button>
-    </form>
-</div>
+<button class="btn btn-primary" data-toggle="modal" data-target="#LogModal"><i class="fas fa-plus"></i>
+    Add Log</a></button>
 {% endblock %}
