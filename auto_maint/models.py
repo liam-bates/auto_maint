@@ -188,7 +188,7 @@ class Maintenance(db.Model):
     maintenance_id = db.Column(db.Integer, primary_key=True)
     vehicle_id = db.Column(
         db.ForeignKey("vehicles.vehicle_id"), nullable=False)
-    name = db.Column(db.String(128), nullable=True)
+    name = db.Column(db.String(64), nullable=True)
     description = db.Column(db.String(256))
     freq_miles = db.Column(db.Integer, nullable=True)
     freq_months = db.Column(db.Integer, nullable=True)
