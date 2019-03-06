@@ -5,7 +5,8 @@ from werkzeug.security import generate_password_hash
 
 from auto_maint import app, db
 from auto_maint.forms import (AddVehicleForm, LoginForm, NewOdometerForm,
-                              RegistrationForm, EditVehicleForm)
+                              RegistrationForm, EditVehicleForm,
+                              NewMaintenanceForm)
 from auto_maint.helpers import email, login_required, standard_schedule
 from auto_maint.models import Log, Maintenance, Odometer, User, Vehicle
 
@@ -163,9 +164,11 @@ def vehicle(vehicle_id):
     # Forms
     odometer_form = NewOdometerForm(request.form)
     edit_form = EditVehicleForm(request.form)
+    maintenance_form = NewMaintenanceForm(request.form)
 
-    # Send vehicle object back to the Odometer form for validation
+    # Send vehicle object back to the forms for validation
     odometer_form.vehicle.data = lookup_vehicle
+    maintenance_form.vehicle.data = lookup_vehicle
 
     # Check if odometer click POST / validated
     if odometer_form.submit_odometer.data and odometer_form.validate_on_submit(
@@ -173,7 +176,6 @@ def vehicle(vehicle_id):
         # Add the reading
         lookup_vehicle.add_odom_reading(odometer_form.reading.data)
         flash(f'New mileage reading added.', 'success')
-        
 
     # Check if edit click POST / validated
     elif edit_form.submit_edit.data and edit_form.validate_on_submit():
@@ -185,6 +187,28 @@ def vehicle(vehicle_id):
         # Commit to DB
         db.session.commit()
         return jsonify(status='ok')
+    # Check if new maintenance form POST / validated
+    elif maintenance_form.submit_maintenance.data and maintenance_form.validate_on_submit():
+        # Create new maintenance task
+        new_maintenance = Maintenance(lookup_vehicle.vehicle_id,
+                                      maintenance_form.name.data,
+                                      maintenance_form.description.data,
+                                      maintenance_form.freq_miles.data,
+                                      maintenance_form.freq_months.data)
+
+        # Check if log data also given
+        if maintenance_form.log_date.data and maintenance_form.log_miles.data:
+            new_maintenance.add_log(maintenance_form.log_date.data,
+                                    maintenance_form.log_miles.data,
+                                    maintenance_form.log_notes.data)
+
+        # Otherwise autogenerate one for the user
+        else:
+            new_maintenance.est_log()
+        
+        # Send confirmation to script
+        return jsonify(status='ok')
+
     else:
         # Set existing values for the lookup form.
         edit_form.name.data = lookup_vehicle.vehicle_name
@@ -196,48 +220,8 @@ def vehicle(vehicle_id):
         vehicle=lookup_vehicle,
         user=lookup_vehicle.user,
         odometer_form=odometer_form,
-        edit_form=edit_form)
-
-
-@app.route("/vehicle/<vehicle_id>/addmaint", methods=['GET', 'POST'])
-@login_required
-def add_maint(vehicle_id):
-    """ Allow user to add a maintenance schedule event. """
-
-    # Pull vehicle from db using id
-    lookup_vehicle = Vehicle.query.filter(
-        Vehicle.vehicle_id == vehicle_id).first()
-
-    # Check that user has access to this vehicle
-    if not lookup_vehicle or lookup_vehicle.user_id != session['user_id']:
-        flash(u'Unauthorized access to vehicle record', 'danger')
-        return redirect('/home')
-
-    # If a GET request send back form page
-    if request.method == 'GET':
-        # Query DB for user
-        user = User.query.filter(User.user_id == session["user_id"]).first()
-        return render_template("add_maint.html", user=user)
-
-    # POST begins
-    # Add the maintenance event for the vehicle.
-    new_maintenance = lookup_vehicle.add_maintenance(
-        request.form['name'], request.form['description'],
-        request.form['freq_miles'], request.form['freq_months'])
-
-    if any(
-            field is not '' for field in
-        [request.form['date'], request.form['mileage'], request.form['notes']
-         ]):
-        new_maintenance.add_log(request.form['date'], request.form['mileage'],
-                                request.form['notes'])
-
-    else:
-        new_maintenance.est_log()
-
-    flash(f'{request.form["name"]} maintenance record added', 'primary')
-    return redirect("vehicle/" + vehicle_id)
-
+        edit_form=edit_form,
+        maintenance_form=maintenance_form)
 
 @app.route(
     "/vehicle/<vehicle_id>/maintenance/<maintenance_id>",
@@ -256,7 +240,7 @@ def maintenance(vehicle_id, maintenance_id):
     # Verify the user has access to the record and that it exists
     if not lookup_vehicle.maintenance or lookup_vehicle.user_id != session[
             'user_id']:
-        flash(u'Unauthorized access to vehicle record', 'danger')
+        flash(u'Unauthorized access to vehicle record.', 'danger')
         return redirect('/home')
 
     if request.method == 'POST':

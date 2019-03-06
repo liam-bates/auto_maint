@@ -62,14 +62,46 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="MaintenanceModal" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Add Maintenance Task</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Please enter the information regarding regular maintenance event below</p>
+                    {% from "_formbuilder.html" import render_field %}
+                    <form method="post" id="MaintenanceForm">
+                        {{ maintenance_form.csrf_token }}
+                        {{ render_field(maintenance_form.name) }}
+                        {{ render_field(maintenance_form.description) }}
+                        {{ render_field(maintenance_form.freq_miles, placeholder="How often maintenance performed in miles") }}
+                        {{ render_field(maintenance_form.freq_months, placeholder="How often maintenance performed in months") }}
+                        <hr>
+                        <h5>Last time performed (optional)</h5>
+                        <small>You can optionally enter the previous time this maintenance was carried out. If you do
+                            not know this we will assume the maintenance schedule has previously been followed.</small>
+                        {{ render_field(maintenance_form.log_date) }}
+                        {{ render_field(maintenance_form.log_miles, placeholder="Mileage when maintenance performed") }}
+                        {{ render_field(maintenance_form.log_notes) }}
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" id="submit_maintenance" name="submit_maintenance"
+                        value="Add Maintenance Task">Add Maintenance Task</button>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <script>
         $('#submit_edit').click(function (event) {
             event.preventDefault();
 
             var data = $('#EditForm').serialize()
             data += '&submit_edit=Edit+Vehicle'
-            
-            event.preventDefault();
+
             var url = "{{ url_for('vehicle', vehicle_id=vehicle.vehicle_id) }}";
             $.post(url, data, function (data) {
                 if (data.status == 'ok') {
@@ -81,6 +113,26 @@
                     html = $(html).find("#EditModal .modal-body").html()
 
                     $('#EditModal .modal-body').html(html);
+                }
+            });
+        })
+        $('#submit_maintenance').click(function (event) {
+            event.preventDefault();
+
+            var data = $('#MaintenanceForm').serialize()
+            data += '&submit_maintenance=Add+Maintenance+Task'
+
+            var url = "{{ url_for('vehicle', vehicle_id=vehicle.vehicle_id) }}";
+            $.post(url, data, function (data) {
+                if (data.status == 'ok') {
+                    $('#MaintenanceModal').modal('hide');
+                    location.reload();
+                }
+                else {
+                    var html = $.parseHTML(data)
+                    html = $(html).find("#MaintenanceModal .modal-body").html()
+
+                    $('#MaintenanceModal .modal-body').html(html);
                 }
             });
         })
@@ -163,9 +215,8 @@
         {% else %}
         <p>You currently do not have any scheduled maintenance for this vehicle.</p>
         {% endif %}
-        <a class="btn btn-primary" href="/vehicle/{{ vehicle.vehicle_id }}/addmaint" role="button"><i
-                class="far fa-calendar-plus"></i> Add to
-            Schedule</a>
+        <button class="btn btn-primary" data-toggle="modal" data-target="#MaintenanceModal"><i class="far fa-calendar-plus"></i>
+            Add Maintenance Task</a></button>
     </div>
 </div>
 

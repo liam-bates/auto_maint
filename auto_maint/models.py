@@ -58,7 +58,7 @@ class Vehicle(db.Model):
         'Odometer', cascade='all,delete', backref='vehicle')
     maintenance = db.relationship(
         'Maintenance', cascade='all,delete', backref='vehicle')
-    
+
     def __init__(self, user_id, vehicle_name, vehicle_built):
         """ Method to save the current user object to the DB. """
         self.user_id = user_id
@@ -133,7 +133,6 @@ class Vehicle(db.Model):
 
         return new_maintenance
 
-
     def delete(self):
         """ Method to delete the current vehicle object from the DB. """
         db.session.delete(self)
@@ -194,6 +193,16 @@ class Maintenance(db.Model):
     freq_miles = db.Column(db.Integer, nullable=True)
     freq_months = db.Column(db.Integer, nullable=True)
     logs = db.relationship('Log', cascade='all,delete', backref='maintenance')
+
+    def __init__(self, vehicle_id, name, description, freq_miles, freq_months):
+        """ Method to save the current maintenance task object to the DB. """
+        self.vehicle_id = vehicle_id
+        self.name = name
+        self.description = description
+        self.freq_miles = freq_miles
+        self.freq_months = freq_months
+        db.session.add(self)
+        db.session.commit()
 
     def add_log(self, date, mileage, notes):
         """ Add a log entry for the maintenance schedule. """

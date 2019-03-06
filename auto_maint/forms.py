@@ -3,12 +3,12 @@ from datetime import date
 from flask_wtf import FlaskForm
 from werkzeug.security import check_password_hash
 from wtforms import (BooleanField, PasswordField, StringField, ValidationError,
-                     HiddenField, SubmitField)
+                     HiddenField, SubmitField, TextAreaField)
 from wtforms.fields.html5 import DateField, IntegerField
 from wtforms.validators import (DataRequired, Email, EqualTo, Length,
-                                NumberRange)
+                                NumberRange, Optional)
 
-from auto_maint.models import User, Vehicle
+from auto_maint.models import User, Odometer
 
 
 def available(form, field):
@@ -61,6 +61,59 @@ def greater_odometer(form, field):
     if field.data < form.vehicle.data.last_odometer().reading:
         raise ValidationError(
             'New mileage reading must be higher than a previous reading.')
+
+
+def logical_log_mileage(form, field):
+    """ Ensure that log mileage is logical when compared with existing odometer
+    readings. """
+    # Check the odometer values before and after from the database.
+    odo_before = Odometer.query.filter(
+        form.vehicle.data.vehicle_id == Odometer.vehicle_id).filter(
+            Odometer.reading_date < form.log_date.data).order_by(
+                Odometer.reading_date.desc()).first()
+    odo_after = Odometer.query.filter(
+        form.vehicle.data.vehicle_id == Odometer.vehicle_id).filter(
+            Odometer.reading_date > form.log_date.data).order_by(
+                Odometer.reading_date).first()
+
+    logical = True
+
+    # Check mileage entered matches logic of existing odometer readings
+    if odo_before:
+        if odo_before.reading > field.data:
+            logical = False
+    if odo_after:
+        if odo_after.reading < field.data:
+            logical = False
+
+    # If illogical flash error, otherwise add the new log with odometer
+    if not logical:
+        raise ValidationError('Unable to create new log as listed mileage does not correspond with existing odometer readings. Check odometer readings to ensure they are correct.')
+
+
+class RequiredIf(DataRequired):
+    """Validator which makes a field required if another field is set and has a truthy value.
+
+    Sources:
+        - http://wtforms.simplecodes.com/docs/1.0.1/validators.html
+        - http://stackoverflow.com/questions/8463209/how-to-make-a-field-conditionally-optional-in-wtforms
+
+    """
+    field_flags = ('requiredif', )
+
+    def __init__(self, other_field_name, message=None, *args, **kwargs):
+        self.other_field_name = other_field_name
+        self.message = message
+
+    def __call__(self, form, field):
+        other_field = form[self.other_field_name]
+        if other_field is None:
+            raise Exception(
+                'You must also complete "%s" on form' % self.other_field_name)
+        if bool(other_field.data):
+            super(RequiredIf, self).__call__(form, field)
+        else:
+            Optional().__call__(form, field)
 
 
 class RegistrationForm(FlaskForm):
@@ -132,11 +185,31 @@ class NewOdometerForm(FlaskForm):
          NumberRange(1, 2000000), greater_odometer])
     submit_odometer = SubmitField('Add Mileage')
 
-    
-
 
 class NewMaintenanceForm(FlaskForm):
     """ Form to create a new maintenance task. """
+    vehicle = HiddenField()
+    name = StringField(
+        'Maintenance Task Name',
+        [DataRequired(), Length(1, 64)],
+        description="Maintenance Task Name")
+    description = TextAreaField(
+        'Task Description', [Optional(), Length(max=256)],
+        description="Task Description (optional)")
+    freq_miles = IntegerField(
+        'Frequency (miles)',
+        [DataRequired(), NumberRange(1, 1000000)])
+    freq_months = IntegerField(
+        'Frequency (months)',
+        [DataRequired(), NumberRange(1, 240)])
+    log_date = DateField('Date', [RequiredIf('log_miles'), logical_date])
+    log_miles = IntegerField(
+        'Mileage',
+        [NumberRange(1, 2000000),
+         RequiredIf('log_date'), logical_log_mileage])
+    log_notes = TextAreaField(
+        'Notes', [Optional(), Length(max=256)], description="Notes")
+    submit_maintenance = SubmitField('Add Maintenance Task')
 
 
 class EditMaintenanceForm(FlaskForm):
