@@ -3,7 +3,7 @@ from datetime import date
 from flask_wtf import FlaskForm
 from werkzeug.security import check_password_hash
 from wtforms import (BooleanField, PasswordField, StringField, ValidationError,
-                     HiddenField)
+                     HiddenField, SubmitField)
 from wtforms.fields.html5 import DateField, IntegerField
 from wtforms.validators import (DataRequired, Email, EqualTo, Length,
                                 NumberRange)
@@ -116,6 +116,7 @@ class EditVehicleForm(FlaskForm):
         description="Your Vehicle's Name")
     manufactured = DateField('Date Manufactured',
                              [DataRequired(), logical_date])
+    submit_edit = SubmitField('Edit Vehicle')
 
     # vehicle = Vehicle.query.filter(Vehicle.id == form.email.data).first()
     # vehicle.last_odometer()
@@ -129,6 +130,9 @@ class NewOdometerForm(FlaskForm):
         'Current Mileage',
         [DataRequired(),
          NumberRange(1, 2000000), greater_odometer])
+    submit_odometer = SubmitField('Add Mileage')
+
+    
 
 
 class NewMaintenanceForm(FlaskForm):

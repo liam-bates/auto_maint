@@ -167,15 +167,28 @@ def vehicle(vehicle_id):
     # Send vehicle object back to the Odometer form for validation
     odometer_form.vehicle.data = lookup_vehicle
 
-    # Set existing values for the lookup form.
-    edit_form.name.data = lookup_vehicle.vehicle_name
-    edit_form.manufactured.data = lookup_vehicle.vehicle_built
-
-    # Check if POST / Validated
-    if odometer_form.validate_on_submit():
+    # Check if odometer click POST / validated
+    if odometer_form.submit_odometer.data and odometer_form.validate_on_submit(
+    ):
         # Add the reading
         lookup_vehicle.add_odom_reading(odometer_form.reading.data)
         flash(f'New mileage reading added.', 'success')
+        
+
+    # Check if edit click POST / validated
+    elif edit_form.submit_edit.data and edit_form.validate_on_submit():
+        # Update fields.
+        lookup_vehicle.vehicle_name = edit_form.name.data
+        lookup_vehicle.vehicle_built = edit_form.manufactured.data
+        # Flash a confirmation message
+        flash(u'Vehicle information updated.', 'success')
+        # Commit to DB
+        db.session.commit()
+        return jsonify(status='ok')
+    else:
+        # Set existing values for the lookup form.
+        edit_form.name.data = lookup_vehicle.vehicle_name
+        edit_form.manufactured.data = lookup_vehicle.vehicle_built
 
     # Render vehicle template
     return render_template(
@@ -349,32 +362,6 @@ def delete_log(log_id):
     return redirect(
         f'/vehicle/{del_log.maintenance.vehicle_id}/maintenance/{del_log.maintenance_id}'
     )
-
-
-@app.route("/vehicle/edit/<vehicle_id>", methods=['POST'])
-@login_required
-def edit_vehicle(vehicle_id):
-    """ Allows for the editing of a vehicle's attributes using POST method. """
-    # If a POST request check that all fields completed, otherwise flash error
-    if request.form['vehicle_name'] == '' or request.form[
-            'date_manufactured'] == '':
-        flash(u'Missing required field/s when editing vehicle.', 'danger')
-    else:
-        # Pull vehicle from db using id
-        ed_vehicle = Vehicle.query.filter(
-            Vehicle.vehicle_id == vehicle_id).first()
-
-        # Ensure requesting user owns the record
-        if ed_vehicle.user_id == session["user_id"]:
-            # Update fields.
-            ed_vehicle.vehicle_name = request.form['vehicle_name']
-            ed_vehicle.vehicle_built = request.form['date_manufactured']
-
-            flash(u'Vehicle information updated.', 'primary')
-
-            db.session.commit()
-
-        return redirect(f'/vehicle/{vehicle_id}')
 
 
 @app.route("/maintenance/edit/<maintenance_id>", methods=['POST'])

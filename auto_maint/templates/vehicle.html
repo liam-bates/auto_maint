@@ -6,7 +6,7 @@
 
 <h1 class="mt-3">{{ vehicle.vehicle_name }}</h1>
 <a class="btn btn-secondary" href="/home" role="button"><i class="fas fa-arrow-left"></i> Back</a>
-<button class="btn btn-primary" data-toggle="modal" data-target="#editModal"><i class="fas fa-pen"></i>
+<button class="btn btn-primary" data-toggle="modal" data-target="#EditModal"><i class="fas fa-pen"></i>
     Edit</a></button>
 <button class="btn btn-danger" data-toggle="modal" data-target="#DeleteModal"><i class="fas fa-trash-alt"></i>
     Delete</a></button>
@@ -38,29 +38,53 @@
         </div>
     </div>
 
-    <div class="modal fade" id="editModal" role="dialog">
+    <div class="modal fade" id="EditModal" role="dialog">
         <div class="modal-dialog">
             <!-- Modal content-->
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Add Vehicle</h4>
+                    <h4 class="modal-title">Edit Vehicle</h4>
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
                     <p>Make changes to your vehicle's basic information below.</p>
                     {% from "_formbuilder.html" import render_field %}
-                    <form method="post" id="addvehicleForm" action="{{ url_for('home') }}">
+                    <form method="post" id="EditForm">
                         {{ edit_form.csrf_token }}
                         {{ render_field(edit_form.name) }}
                         {{ render_field(edit_form.manufactured, help="This can be found within your vehicle's registration details.") }}
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" id="EditVehicleBtn" class="btn btn-primary">Edit Vehicle</button>
+                    <button type="submit" class="btn btn-primary" id="submit_edit" name="submit_edit"
+                        value="Edit Vehicle">Edit Vehicle</button>
                 </div>
                 </form>
             </div>
         </div>
     </div>
+    <script>
+        $('#submit_edit').click(function (event) {
+            event.preventDefault();
+
+            var data = $('#EditForm').serialize()
+            data += '&submit_edit=Edit+Vehicle'
+            
+            event.preventDefault();
+            var url = "{{ url_for('vehicle', vehicle_id=vehicle.vehicle_id) }}";
+            $.post(url, data, function (data) {
+                if (data.status == 'ok') {
+                    $('#EditModal').modal('hide');
+                    location.reload();
+                }
+                else {
+                    var html = $.parseHTML(data)
+                    html = $(html).find("#EditModal .modal-body").html()
+
+                    $('#EditModal .modal-body').html(html);
+                }
+            });
+        })
+    </script>
 
     <div class="col-md-6">
         <h2 class="mt-2">Odometer Readings</h2>
@@ -80,7 +104,7 @@
             </tbody>
         </table>
 
-        <form method="post">
+        <form method="post" id="odometerform">
             {{ odometer_form.reading.label }}
             <div class="form-row">
                 <div class="form-group col-md-6">
@@ -97,7 +121,8 @@
                     {% endif %}
                 </div>
                 <div class="form-group col-md-6">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-tachometer-alt"></i> Add
+                    <button type="submit" class="btn btn-primary" name="submit_odometer" value="Add Mileage"><i
+                            class="fas fa-tachometer-alt"></i> Add
                         Mileage</button>
                 </div>
             </div>
@@ -143,4 +168,5 @@
             Schedule</a>
     </div>
 </div>
+
 {% endblock %}
