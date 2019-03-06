@@ -196,7 +196,7 @@
                 {% for maintenance in vehicle.maintenance | sort(attribute='freq_miles') %}
                 <tr>
                     <td><a
-                            href="/vehicle/{{ vehicle.vehicle_id }}/maintenance/{{ maintenance.maintenance_id }}">{{ maintenance.name }}</a>
+                            href="{{ url_for('maintenance', maintenance_id=maintenance.maintenance_id) }}">{{ maintenance.name }}</a>
                     </td>
                     <td scope="col" class="d-none d-sm-table-cell">{{ maintenance.freq_miles | mileage }}</td>
                     <td scope="col" class="d-none d-sm-table-cell">{{ maintenance.freq_months }} months</td>

@@ -5,7 +5,7 @@
 {% block main %}
 
 <h1 class="mt-3">{{ maintenance.name }}</h1>
-<a class="btn btn-secondary" href="/vehicle/{{ maintenance.vehicle_id }}" role="button"><i
+<a class="btn btn-secondary" href="{{ url_for('vehicle', vehicle_id=maintenance.vehicle_id) }}" role="button"><i
         class="fas fa-arrow-left"></i> Back</a>
 <button class="btn btn-primary" data-toggle="modal" data-target="#EditModal"><i class="fas fa-pen"></i>
     Edit</a></button>
@@ -46,37 +46,43 @@
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body">
-                <form method="post" action="/maintenance/edit/{{ maintenance.maintenance_id }}">
-                    <div class="form-group">
-                        <label for="name">Maintenance Name</label>
-                        <input type="text" class="form-control" name="name" maxlength="128"
-                            value="{{ maintenance.name }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="description">Maintenance Description (optional)</label>
-                        <textarea class="form-control" name="description" placeholder="Maintenance description" rows="3"
-                            maxlength="256">{{ maintenance.description }}</textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="freq_miles">Frequency (miles)</label>
-                        <input type="number" class="form-control" name="freq_miles" value="{{ maintenance.freq_miles }}"
-                            min=1 max=1000000 required>
-                    </div>
-                    <div class="form-group">
-                        <label for="freq_months">Frequency (months)</label>
-                        <input type="number" class="form-control" name="freq_months"
-                            value="{{ maintenance.freq_months }}" min=1 max=240 required>
-                        <small>Maintenance will be due at whichever comes first mileage or months</small>
-                    </div>
+                {% from "_formbuilder.html" import render_field %}
+                <form method="post" id="EditForm">
+                    {{ edit_form.csrf_token }}
+                    {{ render_field(edit_form.name) }}
+                    {{ render_field(edit_form.description) }}
+                    {{ render_field(edit_form.freq_miles, placeholder="How often maintenance performed in miles") }}
+                    {{ render_field(edit_form.freq_months, placeholder="How often maintenance performed in months") }}
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Edit Maintenance</button>
+                <button type="submit" class="btn btn-primary" id="submit_edit">Edit Maintenance</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+<script>
+    $('#submit_edit').click(function (event) {
+        event.preventDefault();
 
+        var data = $('#EditForm').serialize()
+        data += '&submit_edit=Edit+Maintenance+Task'
+
+        var url = "{{ url_for('maintenance', maintenance_id=maintenance.maintenance_id) }}";
+        $.post(url, data, function (data) {
+            if (data.status == 'ok') {
+                $('#EditModal').modal('hide');
+                location.reload();
+            }
+            else {
+                var html = $.parseHTML(data)
+                html = $(html).find("#EditModal .modal-body").html()
+
+                $('#EditModal .modal-body').html(html);
+            }
+        });
+    })
+</script>
 <h2 class="mt-2">Log History</h2>
 {% if maintenance.logs %}
 <table class="table">
@@ -101,20 +107,11 @@
 <h2>New Log Entry</h2 class="mt-2">
 <div class="col">
     <form method="post">
-        <div class="form-group">
-            <label for="mileage">Date</label>
-            <input type="date" class="form-control" placeholder="Date when maintenance performed" name="date" required>
-        </div>
-        <div class="form-group">
-            <label for="date">Mileage</label>
-            <input type="number" class="form-control" name="mileage" placeholder="Mileage when maintenance performed"
-                min=1 max=2000000 required>
-        </div>
-        <div class="form-group">
-            <label for="notes">Notes</label>
-            <textarea class="form-control" placeholder="Notes" name="notes" rows="3" maxlength="256"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Add Log</button>
+        {{ edit_form.csrf_token }}
+        {{ render_field(log_form.log_date) }}
+        {{ render_field(log_form.log_miles) }}
+        {{ render_field(log_form.log_notes) }}
+        <button type="submit" class="btn btn-primary" name="submit_log" value="Add Log">Add Log</button>
     </form>
 </div>
 {% endblock %}

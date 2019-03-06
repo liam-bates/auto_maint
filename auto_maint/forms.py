@@ -2,13 +2,13 @@ from datetime import date
 
 from flask_wtf import FlaskForm
 from werkzeug.security import check_password_hash
-from wtforms import (BooleanField, PasswordField, StringField, ValidationError,
-                     HiddenField, SubmitField, TextAreaField)
+from wtforms import (BooleanField, HiddenField, PasswordField, StringField,
+                     SubmitField, TextAreaField, ValidationError)
 from wtforms.fields.html5 import DateField, IntegerField
 from wtforms.validators import (DataRequired, Email, EqualTo, Length,
                                 NumberRange, Optional)
 
-from auto_maint.models import User, Odometer
+from auto_maint.models import Odometer, User
 
 
 def available(form, field):
@@ -88,7 +88,9 @@ def logical_log_mileage(form, field):
 
     # If illogical flash error, otherwise add the new log with odometer
     if not logical:
-        raise ValidationError('Unable to create new log as listed mileage does not correspond with existing odometer readings. Check odometer readings to ensure they are correct.')
+        raise ValidationError(
+            'Unable to create new log as listed mileage does not correspond with existing odometer readings. Check odometer readings to ensure they are correct.'
+        )
 
 
 class RequiredIf(DataRequired):
@@ -194,8 +196,9 @@ class NewMaintenanceForm(FlaskForm):
         [DataRequired(), Length(1, 64)],
         description="Maintenance Task Name")
     description = TextAreaField(
-        'Task Description', [Optional(), Length(max=256)],
-        description="Task Description (optional)")
+        'Task Description (optional)',
+        [Optional(), Length(max=256)],
+        description="Task Description")
     freq_miles = IntegerField(
         'Frequency (miles)',
         [DataRequired(), NumberRange(1, 1000000)])
@@ -214,7 +217,31 @@ class NewMaintenanceForm(FlaskForm):
 
 class EditMaintenanceForm(FlaskForm):
     """ Form to allow editing of maintenance tasks. """
+    name = StringField(
+        'Maintenance Task Name',
+        [DataRequired(), Length(1, 64)],
+        description="Maintenance Task Name")
+    description = TextAreaField(
+        'Task Description (optional)',
+        [Optional(), Length(max=256)],
+        description="Task Description")
+    freq_miles = IntegerField(
+        'Frequency (miles)',
+        [DataRequired(), NumberRange(1, 1000000)])
+    freq_months = IntegerField(
+        'Frequency (months)',
+        [DataRequired(), NumberRange(1, 240)])
+    submit_edit = SubmitField('Edit Maintenance Task')
 
 
 class NewLogForm(FlaskForm):
     """ Form to allow creation of new maintenance task logs. """
+    vehicle = HiddenField()
+    log_date = DateField('Date', [DataRequired(), logical_date])
+    log_miles = IntegerField(
+        'Mileage',
+        [DataRequired(),
+         NumberRange(1, 2000000), logical_log_mileage])
+    log_notes = TextAreaField(
+        'Notes', [Optional(), Length(max=256)], description="Notes")
+    submit_log = SubmitField('Add Log')
