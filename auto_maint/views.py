@@ -30,34 +30,20 @@ def age_format(value):
 def index():
     """Index view."""
     # Get the form data
-    reg_form = RegistrationForm(request.form)
+    registration_form = RegistrationForm(request.form)
     login_form = LoginForm(request.form)
 
     # If login form validated move to home page
-    if login_form.validate_on_submit():
+    if login_form.submit_login.data and login_form.validate_on_submit():
         return redirect('/home')
 
-    # Redirect to the home route if the user already logged in
-    if session.get("user_id"):
-        return redirect('/home')
-
-    # Otherwise render the index page
-    return render_template(
-        'index.html', login_form=login_form, reg_form=reg_form)
-
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    """ Takes the user registration form and creates a new user if
-    validated. """
-
-    # Get the form data
-    form = RegistrationForm(request.form)
     # Check if form validated
-    if form.validate_on_submit():
+    if registration_form.submit_registration.data and registration_form.validate_on_submit(
+    ):
         # Create a new user object, with hashed password
-        user = User(form.email.data,
-                    generate_password_hash(form.password.data), form.name.data)
+        user = User(registration_form.email.data,
+                    generate_password_hash(registration_form.password.data),
+                    registration_form.name.data)
         # Flash thank you message
         flash('Account succesfully created.', 'success')
 
@@ -81,8 +67,13 @@ def register():
         # Confirm to browser that all okay
         return jsonify(status='ok')
 
-    # Render index page again with errors
-    return render_template('index.html', reg_form=form)
+    # Redirect to the home route if the user already logged in
+    if session.get("user_id"):
+        return redirect('/home')
+
+    # Otherwise render the index page
+    return render_template(
+        'index.html', login_form=login_form, reg_form=registration_form)
 
 
 @app.route('/home', methods=['POST', 'GET'])

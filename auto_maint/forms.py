@@ -140,6 +140,7 @@ class RegistrationForm(FlaskForm):
         description='Password')
     confirm = PasswordField(
         validators=[DataRequired()], description='Confirm Password')
+    submit_registration = SubmitField('Register')
 
 
 class LoginForm(FlaskForm):
@@ -149,6 +150,7 @@ class LoginForm(FlaskForm):
         description='Email')
     password = PasswordField(
         'Password', [DataRequired(), pw_authenticate], description='Password')
+    submit_login = SubmitField('Login')
 
 
 class AddVehicleForm(FlaskForm):

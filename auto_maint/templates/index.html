@@ -6,7 +6,7 @@
 
 
 
-<div class="modal fade" id="regModal" role="dialog">
+<div class="modal fade" id="RegisterModal" role="dialog">
     <div class="modal-dialog">
         <!-- Modal content-->
         <div class="modal-content">
@@ -17,7 +17,7 @@
             <div class="modal-body">
                 <p>Please enter your information below to register a new account.</p>
                 {% from "_formbuilder.html" import render_field %}
-                <form method="post" id="registerForm" action="/register">
+                <form method="post" id="RegisterForm">
                     {{ reg_form.csrf_token }}
                     {{ render_field(reg_form.email, help='An email address to login and for notifications to be sent to.') }}
                     {{ render_field(reg_form.name, help='Your given name, so that we know how to address you.') }}
@@ -25,7 +25,7 @@
                     {{ render_field(reg_form.confirm, False, help='Please do not use a password you use on other websites.') }}
             </div>
             <div class="modal-footer">
-                <button type="submit" id="RegBtn" class="btn btn-primary">Register</button>
+                <button type="submit" id="submit_registration" class="btn btn-primary">Register</button>
             </div>
             </form>
         </div>
@@ -44,33 +44,37 @@
             {{ login_form.csrf_token }}
             {{ render_field(login_form.email) }}
             {{ render_field(login_form.password) }}
-            <button type="submit" class="btn btn-primary">Login</button>
+            <button type="submit" class="btn btn-primary" name="submit_login" value="Login">Login</button>
         </form>
     </div>
     <div class="col-sm-6">
         <h3>Create Account</h3>
         <p>No account? No problem!</p>
-        <button class="btn btn-primary" data-toggle="modal" data-target="#regModal">Register</button>
+        <button class="btn btn-primary" data-toggle="modal" data-target="#RegisterModal">Register</button>
     </div>
 </div>
 
 <script>
-    $('#RegBtn').click(function (event) {
-        event.preventDefault();
-        var url = "{{ url_for('register') }}";
-        $.post(url, data = $('#registerForm').serialize(), function (data) {
-            if (data.status == 'ok') {
-                $('#regModal').modal('hide');
-                location.reload();
-            }
-            else {
-                var html = $.parseHTML(data)
-                html = $(html).find(".modal-body").html()
+    $('#submit_registration').click(function (event) {
+            event.preventDefault();
 
-                $('#regModal .modal-body').html(html);
-            }
-        });
-    })
+            var data = $('#RegisterForm').serialize()
+            data += '&submit_registration=Register'
+
+            var url = "{{ url_for('index') }}";
+            $.post(url, data, function (data) {
+                if (data.status == 'ok') {
+                    $('#RegisterModal').modal('hide');
+                    location.reload();
+                }
+                else {
+                    var html = $.parseHTML(data)
+                    html = $(html).find("#RegisterModal .modal-body").html()
+
+                    $('#RegisterModal .modal-body').html(html);
+                }
+            });
+        })
 </script>
 
 {% endblock %}
