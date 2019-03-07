@@ -1,0 +1,86 @@
+{% extends "layout.html" %}
+
+{% block title %}Welcome!{% endblock %}
+
+{% block main %}
+<div class="modal fade" id="DeleteModal" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Delete Account</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete your account?</p>
+            </div>
+            <div class="modal-footer">
+                <a class="btn btn-danger" href="TODO">Delete Account</a>
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="col-md-6">
+    <h1>Settings</h1>
+    <p>Here you can update your accounts details and password, or delete your account.</p>
+    <h2>Name</h2>
+    <p>Update your name below:</p>
+    <form method="post" id="UpdateName">
+        <div class="form-row">
+            <div class="form-group col-md-8">
+                {{ update_name.csrf_token }}
+                {% if update_name.errors %}
+                {{ update_name.name(class_='form-control is-invalid', placeholder='Your Name') }}
+                <div class="invalid-feedback">
+                    {% for error in update_name.name.errors %}
+                    {{ error }}
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ update_name.name(class="form-control", placeholder='Your Name') }}
+                {% endif %}
+            </div>
+            <div class="form-group col-md-4">
+                {{ update_name.submit_name(class="btn btn-primary") }}
+            </div>
+        </div>
+    </form>
+    <h2>Email</h2>
+    <p>Update your email address below:</p>
+    <form method="post" id="UpdateEmail">
+        <div class="form-row">
+            <div class="form-group col-md-8">
+                {{ update_email.csrf_token }}
+                {% if update_email.errors %}
+                {{ update_email.email(class_='form-control is-invalid', placeholder='Your Email') }}
+                <div class="invalid-feedback">
+                    {% for error in update_email.email.errors %}
+                    {{ error }}
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ update_email.email(class="form-control", placeholder='Your Email') }}
+                {% endif %}
+            </div>
+            <div class="form-group col-md-4">
+                {{ update_email.submit_email(class="btn btn-primary") }}
+            </div>
+        </div>
+    </form>
+    <h2>Password</h2>
+    <p>Enter your current password and provide a new password below:</p>
+    <form method="post" id="UpdatePassword">
+        {% from "_formbuilder.html" import render_field %}
+        {{ update_password.csrf_token }}
+        {{ render_field(update_password.current_password) }}
+        {{ render_field(update_password.password) }}
+        {{ render_field(update_password.confirm, False) }}
+        {{ update_password.submit_password(class="btn btn-primary") }}
+    </form>
+    <h2>Delete Account</h2>
+    <p>Select the below button to delete your account and remove all data from our servers:</p>
+    <button class="btn btn-danger" data-toggle="modal" data-target="#DeleteModal"><i class="fas fa-trash-alt"></i>
+        Delete Account</a></button>
+</div>
+{% endblock %}

@@ -6,10 +6,10 @@ from flask import flash, jsonify, redirect, render_template, request, session
 from werkzeug.security import generate_password_hash
 
 from auto_maint import app, db
-from auto_maint.forms import (AddVehicleForm, EditMaintenanceForm,
-                              EditVehicleForm, LoginForm, NewLogForm,
-                              NewMaintenanceForm, NewOdometerForm,
-                              RegistrationForm)
+from auto_maint.forms import (
+    AddVehicleForm, EditMaintenanceForm, EditVehicleForm, LoginForm,
+    NewLogForm, NewMaintenanceForm, NewOdometerForm, RegistrationForm,
+    UpdateEmail, UpdateName, UpdatePassword)
 from auto_maint.helpers import email, login_required, standard_schedule
 from auto_maint.models import Log, Maintenance, Odometer, User, Vehicle
 
@@ -325,6 +325,64 @@ def delete_log(log_id):
         flash('Unauthorized access to log entry.', 'danger')
 
     return redirect(f'/maintenance/{del_log.maintenance_id}')
+
+
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    """ Settings page view, with POST method for editing attributes. """
+
+    # Query DB for user data
+    user = User.query.filter(User.user_id == session["user_id"]).first()
+     
+    # Define forms
+    update_name = UpdateName(request.form)
+    update_email = UpdateEmail(request.form)
+    update_password = UpdatePassword(request.form)
+
+    # Provide email address for update password form validation
+    update_password.email.data = user.email
+
+    # Check if update name form submitted / validated
+    if update_name.submit_name.data and update_name.validate_on_submit():
+
+        # Update name on DB and confirm success
+        user.name = update_name.name.data
+        db.session.commit()
+        flash('Name updated.', 'success')
+
+    # Check if update email form submitted / validated
+    elif update_email.submit_email.data and update_email.validate_on_submit():
+        
+        # Update email on DB and confirm success
+        user.email = update_email.email.data
+        db.session.commit()
+        flash('Email address updated.', 'success')
+
+    # Check if update password form submitted / validated
+    elif (update_password.submit_password.data
+          and update_password.validate_on_submit()):
+
+        # Update password hash on DB and confirm success
+        user.password_hash = generate_password_hash(
+            update_password.password.data)
+        db.session.commit()
+        flash('Password succesfully updated.', 'success')
+    
+    elif user.blocked:
+        return logout()
+
+    else:
+        # Send current values to the form
+        update_name.name.data = user.name
+        update_email.email.data = user.email
+
+    return render_template(
+        'settings.html',
+        user=user,
+        update_name=update_name,
+        update_email=update_email,
+        update_password=update_password)
 
 
 @app.route('/logout', methods=['GET'])

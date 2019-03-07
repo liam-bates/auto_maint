@@ -27,11 +27,7 @@ def user_authenticate(form, field):
     user = User.query.filter(User.email == field.data).first()
 
     # Check if user exists
-    if user:
-        # Check if account blocked
-        if user.blocked:
-            raise ValidationError('Account Blocked.')
-    else:
+    if not user:
         raise ValidationError('Unknown Email provided.')
 
 
@@ -40,11 +36,17 @@ def pw_authenticate(form, field):
     user = User.query.filter(User.email == form.email.data).first()
     # Check if User known
     if user:
-        # Check if password correct
-        if not check_password_hash(user.password_hash, field.data):
+        # Check if blocked
+        if user.blocked:
+            user.failed_login()
+            raise ValidationError()
+
+        # Check if correct password
+        elif not check_password_hash(user.password_hash, field.data):
             # Record a failed login
             user.failed_login()
             raise ValidationError('Incorrect password provided.')
+
         # Record a succesful login
         else:
             user.successful_login()
@@ -247,3 +249,39 @@ class NewLogForm(FlaskForm):
     log_notes = TextAreaField(
         'Notes', [Optional(), Length(max=256)], description="Notes")
     submit_log = SubmitField('Add Log')
+
+
+class UpdateName(FlaskForm):
+    name = StringField(
+        'Name',
+        validators=[DataRequired(), Length(2, 64)],
+        description='Your Name')
+    submit_name = SubmitField('Update Name')
+
+
+class UpdateEmail(FlaskForm):
+    email = StringField(
+        'Email',
+        validators=[DataRequired(),
+                    Email(),
+                    Length(5, 256), available],
+        description='Your Email')
+    submit_email = SubmitField('Update Email')
+
+
+class UpdatePassword(FlaskForm):
+    email = HiddenField()
+    current_password = PasswordField(
+        'Current Password', [DataRequired(), pw_authenticate], description='Current Password')
+    password = PasswordField(
+        'New Password',
+        validators=[
+            DataRequired(),
+            Length(6, 64),
+            EqualTo('confirm', 'New password and confirmation do not match.')
+        ],
+        description='New Password')
+    confirm = PasswordField(
+        validators=[DataRequired()], description='Confirm New Password')
+    submit_password = SubmitField('Update Password')
+

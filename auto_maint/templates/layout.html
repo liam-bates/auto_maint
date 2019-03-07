@@ -48,7 +48,7 @@
             {% if session.user_id %}
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="/home"><i class="fas fa-home"></i> Home</a>
+                    <a class="nav-link" href="{{ url_for('home') }}"><i class="fas fa-home"></i> Home</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="/home" id="navbarDropdown" role="button"
@@ -57,7 +57,7 @@
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         {% for vehicle in user.vehicles %}
-                        <a class="dropdown-item" href="/vehicle/{{ vehicle.vehicle_id }}">{{ vehicle.vehicle_name }}</a>
+                        <a class="dropdown-item" href="{{ url_for('vehicle', vehicle_id=vehicle.vehicle_id) }}">{{ vehicle.vehicle_name }}</a>
                         {% endfor %}
                         {% if user.vehicles %}
                         <div class="dropdown-divider"></div>
@@ -65,10 +65,13 @@
                         <a class="dropdown-item" href="/home#addvehicleModal">Add Vehicle</a>
                     </div>
                 </li>
+                <li>
+                    <a class="nav-link" href="{{ url_for('settings') }}"><i class="fas fa-cog"></i> Settings</a>
+                </li>
             </ul>
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    <a class="nav-link" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
                 </li>
             </ul>
             {% endif %}
