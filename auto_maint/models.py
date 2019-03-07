@@ -188,10 +188,10 @@ class Maintenance(db.Model):
     maintenance_id = db.Column(db.Integer, primary_key=True)
     vehicle_id = db.Column(
         db.ForeignKey("vehicles.vehicle_id"), nullable=False)
-    name = db.Column(db.String(64), nullable=True)
-    description = db.Column(db.String(256))
-    freq_miles = db.Column(db.Integer, nullable=True)
-    freq_months = db.Column(db.Integer, nullable=True)
+    name = db.Column(db.String(64), nullable=False)
+    description = db.Column(db.String(256), nullable=True)
+    freq_miles = db.Column(db.Integer, nullable=False)
+    freq_months = db.Column(db.Integer, nullable=False)
     logs = db.relationship('Log', cascade='all,delete', backref='maintenance')
 
     def __init__(self, vehicle_id, name, description, freq_miles, freq_months):
@@ -322,7 +322,7 @@ class Log(db.Model):
     maintenance_id = db.Column(
         db.ForeignKey("maintenance.maintenance_id"), nullable=False)
     date = db.Column(db.Date, nullable=False)
-    mileage = db.Column(db.Integer, nullable=True)
+    mileage = db.Column(db.Integer, nullable=False)
     notes = db.Column(db.String(256))
 
     def delete(self):
