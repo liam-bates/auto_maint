@@ -73,7 +73,7 @@
                     {% from "_formbuilder.html" import render_field %}
                     <form method="post" id="LogForm">
                         {{ edit_form.csrf_token }}
-                        {{ render_field(log_form.log_date) }}
+                        {{ render_field(log_form.log_date, placeholder="MM/DD/YYYY") }}
                         {{ render_field(log_form.log_miles, placeholder="Mileage when undertaken") }}
                         {{ render_field(log_form.log_notes) }}
                 </div>

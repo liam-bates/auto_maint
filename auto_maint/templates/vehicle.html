@@ -5,7 +5,7 @@
 {% block main %}
 
 <h1 class="mt-3">{{ vehicle.vehicle_name }}</h1>
-<a class="btn btn-secondary" href="/home" role="button"><i class="fas fa-arrow-left"></i> Back</a>
+<a class="btn btn-secondary" href="{{ url_for('home') }}" role="button"><i class="fas fa-arrow-left"></i> Back</a>
 <button class="btn btn-primary" data-toggle="modal" data-target="#EditModal"><i class="fas fa-pen"></i>
     Edit</a></button>
 <button class="btn btn-danger" data-toggle="modal" data-target="#DeleteModal"><i class="fas fa-trash-alt"></i>
@@ -83,7 +83,7 @@
                         <h5>Last time performed (optional)</h5>
                         <small>You can optionally enter the previous time this maintenance was carried out. If you do
                             not know this we will assume the maintenance schedule has previously been followed.</small>
-                        {{ render_field(maintenance_form.log_date) }}
+                        {{ render_field(maintenance_form.log_date, placeholder="MM/DD/YYYY") }}
                         {{ render_field(maintenance_form.log_miles, placeholder="Mileage when maintenance performed") }}
                         {{ render_field(maintenance_form.log_notes) }}
                 </div>

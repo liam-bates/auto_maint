@@ -18,7 +18,7 @@
                 <form method="post" id="addvehicleForm" action="{{ url_for('home') }}">
                     {{ vehicle_form.csrf_token }}
                     {{ render_field(vehicle_form.name) }}
-                    {{ render_field(vehicle_form.manufactured, help="This can be found within your vehicle's registration details.") }}
+                    {{ render_field(vehicle_form.manufactured, placeholder="MM/DD/YYYY", help="This can be found within your vehicle's registration details.") }}
                     {{ render_field(vehicle_form.current_mileage, placeholder="Your Vehicle's Current Mileage") }}
                     <div class="form-check">
                         {{ vehicle_form.standard_schedule(class="form-check-input") }}
