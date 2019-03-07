@@ -1,12 +1,15 @@
+""" Auto Maintenance views. Also features GET routes for the deletion of
+objects. """
 from email.message import EmailMessage
 
 from flask import flash, jsonify, redirect, render_template, request, session
 from werkzeug.security import generate_password_hash
 
 from auto_maint import app, db
-from auto_maint.forms import (
-    AddVehicleForm, EditMaintenanceForm, EditVehicleForm, LoginForm,
-    NewLogForm, NewMaintenanceForm, NewOdometerForm, RegistrationForm)
+from auto_maint.forms import (AddVehicleForm, EditMaintenanceForm,
+                              EditVehicleForm, LoginForm, NewLogForm,
+                              NewMaintenanceForm, NewOdometerForm,
+                              RegistrationForm)
 from auto_maint.helpers import email, login_required, standard_schedule
 from auto_maint.models import Log, Maintenance, Odometer, User, Vehicle
 
@@ -38,8 +41,8 @@ def index():
         return redirect('/home')
 
     # Check if form validated
-    if registration_form.submit_registration.data and registration_form.validate_on_submit(
-    ):
+    if (registration_form.submit_registration.data
+            and registration_form.validate_on_submit()):
         # Create a new user object, with hashed password
         user = User(registration_form.email.data,
                     generate_password_hash(registration_form.password.data),
@@ -148,8 +151,8 @@ def vehicle(vehicle_id):
         return jsonify(status='ok')
 
     # Check if new maintenance form POST / validated
-    elif maintenance_form.submit_maintenance.data and maintenance_form.validate_on_submit(
-    ):
+    elif (maintenance_form.submit_maintenance.data
+          and maintenance_form.validate_on_submit()):
         # Create new maintenance task
         new_maintenance = Maintenance(lookup_vehicle.vehicle_id,
                                       maintenance_form.name.data,
@@ -188,7 +191,7 @@ def vehicle(vehicle_id):
 @app.route("/vehicle/<vehicle_id>/delete", methods=['GET'])
 @login_required
 def delete_vehicle(vehicle_id):
-    """Takes a URL and deletes the vehicle, by the ID provided"""
+    """ Takes a URL and deletes the vehicle, by the ID provided. """
 
     # Query the db for a matching vehicle
     del_vehicle = Vehicle.query.filter_by(vehicle_id=vehicle_id).first()
@@ -208,7 +211,7 @@ def delete_vehicle(vehicle_id):
 @app.route("/odo/<reading_id>/delete", methods=['GET'])
 @login_required
 def delete_odometer(reading_id):
-    """Takes a URL and deletes the odometer, by the ID provided"""
+    """ Takes a URL and deletes the odometer, by the ID provided. """
 
     # Query the db for a matching vehicle
     del_odom = Odometer.query.filter_by(reading_id=reading_id).first()
@@ -288,7 +291,7 @@ def maintenance(maintenance_id):
 @app.route("/maintenance/<maintenance_id>/delete", methods=['GET'])
 @login_required
 def delete_maintenance(maintenance_id):
-    """Takes a URL and deletes the vehicle, by the ID provided"""
+    """ Takes a URL and deletes the vehicle, by the ID provided. """
 
     # Query the db for a matching vehicle
     del_maintenance = Maintenance.query.filter_by(
@@ -308,7 +311,7 @@ def delete_maintenance(maintenance_id):
 @app.route("/log/<log_id>/delete", methods=['GET'])
 @login_required
 def delete_log(log_id):
-    """Takes a URL and deletes the log entry, by the ID provided"""
+    """ Takes a URL and deletes the log entry, by the ID provided. """
 
     # Query the db for a matching vehicle
     del_log = Log.query.filter_by(log_id=log_id).first()
@@ -321,9 +324,7 @@ def delete_log(log_id):
     else:
         flash('Unauthorized access to log entry.', 'danger')
 
-    return redirect(
-        f'/vehicle/{del_log.maintenance.vehicle_id}/maintenance/{del_log.maintenance_id}'
-    )
+    return redirect(f'/maintenance/{del_log.maintenance_id}')
 
 
 @app.route('/logout', methods=['GET'])

@@ -1,3 +1,4 @@
+""" Forms used throughout the web app, using WTForms. """
 from datetime import date
 
 from flask_wtf import FlaskForm
@@ -12,6 +13,8 @@ from auto_maint.models import Odometer, User
 
 
 def available(form, field):
+    """ Check if the user's email address has not already been registered on the
+    web app. """
     # Ensure no other registered users have that email
     if User.query.filter(User.email == field.data).count():
         raise ValidationError('Email already registered.')
@@ -33,6 +36,7 @@ def user_authenticate(form, field):
 
 
 def pw_authenticate(form, field):
+    """ Authenticate the user's password by checking the stored hash. """
     user = User.query.filter(User.email == form.email.data).first()
     # Check if User known
     if user:
@@ -88,19 +92,15 @@ def logical_log_mileage(form, field):
 
     # If illogical flash error, otherwise add the new log with odometer
     if not logical:
-        raise ValidationError(
-            'Unable to create new log as listed mileage does not correspond with existing odometer readings. Check odometer readings to ensure they are correct.'
-        )
+        raise ValidationError("""Unable to create new log as listed mileage
+            does not correspond with existing odometer readings. Check odometer
+            readings to ensure they are correct.""")
 
 
 class RequiredIf(DataRequired):
-    """Validator which makes a field required if another field is set and has a truthy value.
+    """ Validator which makes a field required if another field is set and has a
+    truthy value. """
 
-    Sources:
-        - http://wtforms.simplecodes.com/docs/1.0.1/validators.html
-        - http://stackoverflow.com/questions/8463209/how-to-make-a-field-conditionally-optional-in-wtforms
-
-    """
     field_flags = ('requiredif', )
 
     def __init__(self, other_field_name, message=None, *args, **kwargs):

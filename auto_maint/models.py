@@ -7,7 +7,7 @@ from auto_maint import db
 
 
 class User(db.Model):
-    """User of the website"""
+    """ User of the website and related methods. """
     __tablename__ = "users"
     user_id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(256), unique=True, nullable=False)
@@ -47,7 +47,7 @@ class User(db.Model):
 
 
 class Vehicle(db.Model):
-    """Vehicle of a user"""
+    """ Vehicle of a user and related methods. """
     __tablename__ = "vehicles"
     vehicle_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.ForeignKey("users.user_id"), nullable=False)
