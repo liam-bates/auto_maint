@@ -391,6 +391,7 @@ def delete():
     user = User.query.filter(User.user_id == session["user_id"]).first()
     user.delete()
     flash('Account deleted.', 'primary')
+    session.clear()
     return redirect('/')
 
 
