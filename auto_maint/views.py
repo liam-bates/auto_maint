@@ -388,10 +388,10 @@ def settings():
 @login_required
 def delete():
     """ Delete current user. """
-        user = User.query.filter(User.user_id == session["user_id"]).first()
-        user.delete()
-        flash('Account deleted.', 'primary')
-        return redirect('/')
+    user = User.query.filter(User.user_id == session["user_id"]).first()
+    user.delete()
+    flash('Account deleted.', 'primary')
+    return redirect('/')
 
 
 @app.route('/logout', methods=['GET'])
