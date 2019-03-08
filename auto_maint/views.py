@@ -334,7 +334,7 @@ def settings():
 
     # Query DB for user data
     user = User.query.filter(User.user_id == session["user_id"]).first()
-     
+
     # Define forms
     update_name = UpdateName(request.form)
     update_email = UpdateEmail(request.form)
@@ -353,7 +353,7 @@ def settings():
 
     # Check if update email form submitted / validated
     elif update_email.submit_email.data and update_email.validate_on_submit():
-        
+
         # Update email on DB and confirm success
         user.email = update_email.email.data
         db.session.commit()
@@ -368,7 +368,7 @@ def settings():
             update_password.password.data)
         db.session.commit()
         flash('Password succesfully updated.', 'success')
-    
+
     elif user.blocked:
         return logout()
 
@@ -383,6 +383,7 @@ def settings():
         update_name=update_name,
         update_email=update_email,
         update_password=update_password)
+
 
 @app.route('/delete', methods=['GET'])
 @login_required
