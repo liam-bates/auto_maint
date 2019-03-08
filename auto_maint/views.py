@@ -372,10 +372,9 @@ def settings():
     elif user.blocked:
         return logout()
 
-    else:
-        # Send current values to the form
-        update_name.name.data = user.name
-        update_email.email.data = user.email
+    # Send current values to the form
+    update_name.name.data = user.name
+    update_email.email.data = user.email
 
     return render_template(
         'settings.html',
