@@ -7,4 +7,4 @@ Auto Maintenance is a Flask web app that was created as my final CS50 project. T
 
 The app utilizes Flask, SQLAlchemy, Postgres and SMTP to function, in addition to a number of other extensions. 
 
-I personally host a working version of the app on a free Heroku dyno [here](http://auto-maint.liam-bates.com). Using Heroku Scheduler the app runs a the notification script daily to ensure that users are reminded of required vehicle maintenace even if the app dyno is sleeping.
+I personally host a working version of the app on a free Heroku dyno [here](http://auto-maint.liam-bates.com). Using Heroku Scheduler the app runs a notification script daily to ensure that users are reminded of required vehicle maintenace even if the app dyno is sleeping.
