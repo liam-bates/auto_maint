@@ -390,7 +390,8 @@ def delete():
     """ Delete current user. """
         user = User.query.filter(User.user_id == session["user_id"]).first()
         user.delete()
-        return redirect
+        flash('Account deleted.', 'primary')
+        return redirect('/')
 
 
 @app.route('/logout', methods=['GET'])
