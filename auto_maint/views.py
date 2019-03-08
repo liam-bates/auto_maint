@@ -384,6 +384,14 @@ def settings():
         update_email=update_email,
         update_password=update_password)
 
+@app.route('/delete', methods=['GET'])
+@login_required
+def delete():
+    """ Delete current user. """
+        user = User.query.filter(User.user_id == session["user_id"]).first()
+        user.delete()
+        return redirect
+
 
 @app.route('/logout', methods=['GET'])
 @login_required

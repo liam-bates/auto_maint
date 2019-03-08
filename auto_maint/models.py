@@ -45,6 +45,11 @@ class User(db.Model):
         # Commit to db
         db.session.commit()
 
+    def delete(self):
+        """ Method to delete the current vehicle object from the DB. """
+        db.session.delete(self)
+        db.session.commit()
+
 
 class Vehicle(db.Model):
     """ Vehicle of a user and related methods. """
