@@ -41,7 +41,7 @@
             </div>
             <div class="modal-body">
                 <p>Please enter your registered email below to send a password reset link to your email address.</p>
-                <form method="post" id="RegisterForm">
+                <form method="post" id="ForgotForm">
                     {{ forgot_form.csrf_token }}
                     {{ render_field(forgot_form.email) }}
             </div>
@@ -78,25 +78,45 @@
 
 <script>
     $('#submit_registration').click(function (event) {
-            event.preventDefault();
+        event.preventDefault();
 
-            var data = $('#RegisterForm').serialize()
-            data += '&submit_registration=Register'
+        var data = $('#RegisterForm').serialize()
+        data += '&submit_registration=Register'
 
-            var url = "{{ url_for('index') }}";
-            $.post(url, data, function (data) {
-                if (data.status == 'ok') {
-                    $('#RegisterModal').modal('hide');
-                    location.reload();
-                }
-                else {
-                    var html = $.parseHTML(data)
-                    html = $(html).find("#RegisterModal .modal-body").html()
+        var url = "{{ url_for('index') }}";
+        $.post(url, data, function (data) {
+            if (data.status == 'ok') {
+                $('#RegisterModal').modal('hide');
+                location.reload();
+            }
+            else {
+                var html = $.parseHTML(data)
+                html = $(html).find("#RegisterModal .modal-body").html()
 
-                    $('#RegisterModal .modal-body').html(html);
-                }
-            });
-        })
+                $('#RegisterModal .modal-body').html(html);
+            }
+        });
+    })
+    $('#submit_forgot').click(function (event) {
+        event.preventDefault();
+
+        var data = $('#ForgotForm').serialize()
+        data += '&submit_forgot=Send+Reset+Email'
+
+        var url = "{{ url_for('index') }}";
+        $.post(url, data, function (data) {
+            if (data.status == 'ok') {
+                $('#ForgotModal').modal('hide');
+                location.reload();
+            }
+            else {
+                var html = $.parseHTML(data)
+                html = $(html).find("#ForgotModal .modal-body").html()
+
+                $('#ForgotModal .modal-body').html(html);
+            }
+        });
+    })
 </script>
 
 {% endblock %}

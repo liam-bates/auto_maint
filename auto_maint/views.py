@@ -40,6 +40,10 @@ def index():
     if login_form.submit_login.data and login_form.validate_on_submit():
         return redirect('/home')
 
+    if forgot_form.submit_forgot.data and forgot_form.validate_on_submit():
+        flash('Email verification message sent.', 'primary')
+        return jsonify(status='ok')
+
     # Check if form validated
     if (registration_form.submit_registration.data
             and registration_form.validate_on_submit()):
