@@ -1,6 +1,6 @@
 """ Script to be run daily by Heroku Scheduler. This is used primarily for email
 notifications. """
-from auto_maint.helpers import notify_users
+from auto_maint.scheduled_tasks import notify_users
 
 
 def run():

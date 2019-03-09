@@ -1,6 +1,7 @@
 """ Forms used throughout the web app, using WTForms. """
 from datetime import date
 
+from flask import flash, Markup
 from flask_wtf import FlaskForm
 from werkzeug.security import check_password_hash
 from wtforms import (BooleanField, HiddenField, PasswordField, StringField,
@@ -41,6 +42,14 @@ def pw_authenticate(form, field):
             user.failed_login()
             raise ValidationError()
 
+        elif not user.email_confirmed:
+            # Send the user another welcome / verification email
+            user.verification_email()
+
+            flash("""Email not yet confirmed. Please use the
+            verification link in the email provided. An additional email 
+            with verification link has been sent to you.""", 'danger')
+
         # Check if correct password
         elif not check_password_hash(user.password_hash, field.data):
             # Record a failed login
@@ -62,7 +71,6 @@ def logical_date(form, field):
 
 def greater_odometer(form, field):
     """ Ensure odometer reading provided is higher than most recent. """
-    print(form.vehicle.data)
     # Ensure that new mileage is higher than previous
     if field.data < form.vehicle.data.last_odometer().reading:
         raise ValidationError(
@@ -272,7 +280,8 @@ class UpdateEmail(FlaskForm):
 class UpdatePassword(FlaskForm):
     email = HiddenField()
     current_password = PasswordField(
-        'Current Password', [DataRequired(), pw_authenticate], description='Current Password')
+        'Current Password', [DataRequired(), pw_authenticate],
+        description='Current Password')
     password = PasswordField(
         'New Password',
         validators=[
@@ -284,4 +293,3 @@ class UpdatePassword(FlaskForm):
     confirm = PasswordField(
         validators=[DataRequired()], description='Confirm New Password')
     submit_password = SubmitField('Update Password')
-

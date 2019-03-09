@@ -7,6 +7,7 @@ from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 
+from itsdangerous import URLSafeTimedSerializer
 
 app = Flask(__name__)
 
@@ -28,7 +29,11 @@ migrate = Migrate(app, db)
 # Set domain
 app.config["SERVER_NAME"] = os.environ['SERVER_NAME']
 
+# Set secret key
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
+
+# Set timed serializer
+ts = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 
 csrf = CSRFProtect(app)
 

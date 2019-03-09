@@ -1,9 +1,11 @@
 """ auto_maint app models defined """
 import datetime
+from email.message import EmailMessage
 
-from flask import session
+from flask import render_template, session, url_for
 
-from auto_maint import db
+from auto_maint import db, ts
+from auto_maint.helpers import send_email
 
 
 class User(db.Model):
@@ -15,6 +17,7 @@ class User(db.Model):
     name = db.Column(db.String(64), nullable=False)
     failed_logins = db.Column(db.SmallInteger, default=0, nullable=False)
     blocked = db.Column(db.Boolean, default=False, nullable=False)
+    email_confirmed = db.Column(db.Boolean, default=False, nullable=False)
     vehicles = db.relationship('Vehicle', cascade='all,delete', backref='user')
 
     def __init__(self, email, password_hash, name):
@@ -44,6 +47,26 @@ class User(db.Model):
             self.blocked = True
         # Commit to db
         db.session.commit()
+
+    def verification_email(self):
+        """ Send the user a welcome email with a verification link. """
+        # Generate Email message to send
+        msg = EmailMessage()
+        msg['Subject'] = 'Welcome to Auto Maintenance!'
+        msg['From'] = 'auto_maint@liam-bates.com'
+        msg['To'] = self.email
+
+        # Generate email confirmation token and URL
+        token = ts.dumps(self.email, salt='email-confirm-key')
+        confirm_url = url_for('confirm_email', token=token, _external=True)
+
+        # Generate HTML for email
+        html = render_template(
+            'email/welcome.html', user=self, confirm_url=confirm_url)
+        msg.set_content(html, subtype='html')
+
+        # Send email
+        send_email(msg)
 
     def delete(self):
         """ Method to delete the current vehicle object from the DB. """

@@ -1,16 +1,16 @@
 """ Auto Maintenance views. Also features GET routes for the deletion of
 objects. """
-from email.message import EmailMessage
 
 from flask import flash, jsonify, redirect, render_template, request, session
 from werkzeug.security import generate_password_hash
 
-from auto_maint import app, db
-from auto_maint.forms import (
-    AddVehicleForm, EditMaintenanceForm, EditVehicleForm, LoginForm,
-    NewLogForm, NewMaintenanceForm, NewOdometerForm, RegistrationForm,
-    UpdateEmail, UpdateName, UpdatePassword)
-from auto_maint.helpers import email, login_required, standard_schedule
+from auto_maint import app, db, ts
+from auto_maint.forms import (AddVehicleForm, EditMaintenanceForm,
+                              EditVehicleForm, LoginForm, NewLogForm,
+                              NewMaintenanceForm, NewOdometerForm,
+                              RegistrationForm, UpdateEmail, UpdateName,
+                              UpdatePassword)
+from auto_maint.helpers import login_required, standard_schedule
 from auto_maint.models import Log, Maintenance, Odometer, User, Vehicle
 
 
@@ -48,24 +48,16 @@ def index():
                     generate_password_hash(registration_form.password.data),
                     registration_form.name.data)
         # Flash thank you message
-        flash('Account succesfully created.', 'success')
+        flash(
+            """Account succesfully created. Please check your email and
+            confirm your email address using the link provided in the email.""",
+            'success')
 
-        # Start a new user session
-        session["user_id"] = user.user_id
+        # Save to DB
         db.session.commit()
 
-        # Generate Email message to send
-        msg = EmailMessage()
-        msg['Subject'] = 'Welcome to Auto Maintenance!'
-        msg['From'] = 'auto_maint@liam-bates.com'
-        msg['To'] = user.email
-
-        # Generate HTML for email
-        html = render_template('email/welcome.html', user=user)
-        msg.set_content(html, subtype='html')
-
-        # Send email
-        email(msg)
+        # Send the user a welcome / verification email
+        user.verification_email()
 
         # Confirm to browser that all okay
         return jsonify(status='ok')
@@ -77,6 +69,35 @@ def index():
     # Otherwise render the index page
     return render_template(
         'index.html', login_form=login_form, reg_form=registration_form)
+
+
+@app.route('/confirm/<token>')
+def confirm_email(token):
+    """ Takes the email confirmation token from the user and updates the DB to
+    reflect the confirmation. """
+    # Attempt to confirm confirmation token otherwise flash error
+    try:
+        user_email = ts.loads(token, salt="email-confirm-key", max_age=86400)
+    except:
+        flash('Unknown or outdated email confirmation.', 'danger')
+        return redirect('/')
+
+    # Find user in DB by email
+    user = User.query.filter(User.email == user_email).first()
+
+    # Set user's email confirmed value to true
+    user.email_confirmed = True
+
+    flash('Thank you for confirming your email address.', 'success')
+
+    # Log the user in
+    session["user_id"] = user.user_id
+
+    # Save to DB
+    db.session.commit()
+
+    # Send user to home page
+    return home()
 
 
 @app.route('/home', methods=['POST', 'GET'])
@@ -99,7 +120,7 @@ def home():
               'success')
         # Confirm to browser that all okay
         return jsonify(status='ok')
-    # Query db for users info and vehicles
+    # Query DB for users info and vehicles
     vehicles = Vehicle.query.filter(
         Vehicle.user_id == session["user_id"]).all()
     user = User.query.filter(User.user_id == session["user_id"]).first()
@@ -114,7 +135,7 @@ def vehicle(vehicle_id):
     """ Provides an overview of a vehicle record and allows posting of new
     odometer readings. """
 
-    # Pull vehicle from db using id
+    # Pull vehicle from DB using id
     lookup_vehicle = Vehicle.query.filter(
         Vehicle.vehicle_id == vehicle_id).first()
 
@@ -193,7 +214,7 @@ def vehicle(vehicle_id):
 def delete_vehicle(vehicle_id):
     """ Takes a URL and deletes the vehicle, by the ID provided. """
 
-    # Query the db for a matching vehicle
+    # Query the DB for a matching vehicle
     del_vehicle = Vehicle.query.filter_by(vehicle_id=vehicle_id).first()
 
     # Test whatever was returned to see if the vehicle is owned by the user
@@ -213,7 +234,7 @@ def delete_vehicle(vehicle_id):
 def delete_odometer(reading_id):
     """ Takes a URL and deletes the odometer, by the ID provided. """
 
-    # Query the db for a matching vehicle
+    # Query the DB for a matching vehicle
     del_odom = Odometer.query.filter_by(reading_id=reading_id).first()
 
     # Test whatever was returned to see if the vehicle is owned by the user
@@ -237,7 +258,7 @@ def delete_odometer(reading_id):
 def maintenance(maintenance_id):
     """ Shows a details of a particular scheduled maintenance event and allows
     the user to create log entries for that task when performed. """
-    # Pull vehicle, maintenance and user reocrds from db using id
+    # Pull vehicle, maintenance and user reocrds from DB using id
     lookup_maintenance = Maintenance.query.filter(
         Maintenance.maintenance_id == maintenance_id).first()
 
@@ -293,7 +314,7 @@ def maintenance(maintenance_id):
 def delete_maintenance(maintenance_id):
     """ Takes a URL and deletes the vehicle, by the ID provided. """
 
-    # Query the db for a matching vehicle
+    # Query the DB for a matching vehicle
     del_maintenance = Maintenance.query.filter_by(
         maintenance_id=maintenance_id).first()
 
@@ -313,7 +334,7 @@ def delete_maintenance(maintenance_id):
 def delete_log(log_id):
     """ Takes a URL and deletes the log entry, by the ID provided. """
 
-    # Query the db for a matching vehicle
+    # Query the DB for a matching vehicle
     del_log = Log.query.filter_by(log_id=log_id).first()
 
     # Test whatever was returned to see if the vehicle is owned by the user

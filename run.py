@@ -3,7 +3,7 @@ import os
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from auto_maint.helpers import notify_users
+from auto_maint.scheduled_tasks import notify_users
 
 
 def run_web_script():
