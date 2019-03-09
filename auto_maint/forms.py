@@ -1,7 +1,7 @@
 """ Forms used throughout the web app, using WTForms. """
 from datetime import date
 
-from flask import flash, Markup
+from flask import flash
 from flask_wtf import FlaskForm
 from werkzeug.security import check_password_hash
 from wtforms import (BooleanField, HiddenField, PasswordField, StringField,
