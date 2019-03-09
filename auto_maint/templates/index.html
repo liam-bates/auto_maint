@@ -4,7 +4,7 @@
 
 {% block main %}
 
-
+{% from "_formbuilder.html" import render_field %}
 
 <div class="modal fade" id="RegisterModal" role="dialog">
     <div class="modal-dialog">
@@ -16,7 +16,6 @@
             </div>
             <div class="modal-body">
                 <p>Please enter your information below to register a new account.</p>
-                {% from "_formbuilder.html" import render_field %}
                 <form method="post" id="RegisterForm">
                     {{ reg_form.csrf_token }}
                     {{ render_field(reg_form.email, help='An email address to login and for notifications to be sent to.') }}
@@ -26,6 +25,28 @@
             </div>
             <div class="modal-footer">
                 <button type="submit" id="submit_registration" class="btn btn-primary">Register</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ForgotModal" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Forgot Password</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Please enter your registered email below to send a password reset link to your email address.</p>
+                <form method="post" id="RegisterForm">
+                    {{ forgot_form.csrf_token }}
+                    {{ render_field(forgot_form.email) }}
+            </div>
+            <div class="modal-footer">
+                {{ forgot_form.submit_forgot(class="btn btn-primary") }}
             </div>
             </form>
         </div>
@@ -44,6 +65,7 @@
             {{ login_form.csrf_token }}
             {{ render_field(login_form.email) }}
             {{ render_field(login_form.password) }}
+            <p><a href="" data-toggle="modal" data-target="#ForgotModal">Forgot password?</a></p>
             <button type="submit" class="btn btn-primary" name="submit_login" value="Login">Login</button>
         </form>
     </div>

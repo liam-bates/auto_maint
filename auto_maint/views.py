@@ -5,11 +5,10 @@ from flask import flash, jsonify, redirect, render_template, request, session
 from werkzeug.security import generate_password_hash
 
 from auto_maint import app, db, ts
-from auto_maint.forms import (AddVehicleForm, EditMaintenanceForm,
-                              EditVehicleForm, LoginForm, NewLogForm,
-                              NewMaintenanceForm, NewOdometerForm,
-                              RegistrationForm, UpdateEmail, UpdateName,
-                              UpdatePassword)
+from auto_maint.forms import (
+    AddVehicleForm, EditMaintenanceForm, EditVehicleForm, LoginForm,
+    NewLogForm, NewMaintenanceForm, NewOdometerForm, RegistrationForm,
+    UpdateEmail, UpdateName, UpdatePassword, ForgotPassword)
 from auto_maint.helpers import login_required, standard_schedule
 from auto_maint.models import Log, Maintenance, Odometer, User, Vehicle
 
@@ -35,6 +34,7 @@ def index():
     # Get the form data
     registration_form = RegistrationForm(request.form)
     login_form = LoginForm(request.form)
+    forgot_form = ForgotPassword(request.form)
 
     # If login form validated move to home page
     if login_form.submit_login.data and login_form.validate_on_submit():
@@ -68,7 +68,10 @@ def index():
 
     # Otherwise render the index page
     return render_template(
-        'index.html', login_form=login_form, reg_form=registration_form)
+        'index.html',
+        login_form=login_form,
+        reg_form=registration_form,
+        forgot_form=forgot_form)
 
 
 @app.route('/confirm/<token>')

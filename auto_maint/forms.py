@@ -293,3 +293,9 @@ class UpdatePassword(FlaskForm):
     confirm = PasswordField(
         validators=[DataRequired()], description='Confirm New Password')
     submit_password = SubmitField('Update Password')
+
+class ForgotPassword(FlaskForm):
+    email = StringField(
+        'Email', [DataRequired(), Email(), user_authenticate],
+        description='Email')
+    submit_forgot = SubmitField('Send Reset Email')
