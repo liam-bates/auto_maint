@@ -46,7 +46,8 @@ def pw_authenticate(form, field):
             # Send the user another welcome / verification email
             user.verification_email()
 
-            flash("""Email not yet confirmed. Please use the
+            flash(
+                """Email not yet confirmed. Please use the
             verification link in the email provided. An additional email 
             with verification link has been sent to you.""", 'danger')
 
@@ -294,8 +295,23 @@ class UpdatePassword(FlaskForm):
         validators=[DataRequired()], description='Confirm New Password')
     submit_password = SubmitField('Update Password')
 
+
 class ForgotPassword(FlaskForm):
     email = StringField(
         'Email', [DataRequired(), Email(), user_authenticate],
         description='Email')
     submit_forgot = SubmitField('Send Reset Email')
+
+
+class ResetPassword(FlaskForm):
+    password = PasswordField(
+        'New Password',
+        validators=[
+            DataRequired(),
+            Length(6, 64),
+            EqualTo('confirm', 'New password and confirmation do not match.')
+        ],
+        description='New Password')
+    confirm = PasswordField(
+        validators=[DataRequired()], description='Confirm New Password')
+    submit_password = SubmitField('Update Password')

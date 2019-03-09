@@ -6,9 +6,9 @@ from werkzeug.security import generate_password_hash
 
 from auto_maint import app, db, ts
 from auto_maint.forms import (
-    AddVehicleForm, EditMaintenanceForm, EditVehicleForm, LoginForm,
-    NewLogForm, NewMaintenanceForm, NewOdometerForm, RegistrationForm,
-    UpdateEmail, UpdateName, UpdatePassword, ForgotPassword)
+    AddVehicleForm, EditMaintenanceForm, EditVehicleForm, ForgotPassword,
+    LoginForm, NewLogForm, NewMaintenanceForm, NewOdometerForm,
+    RegistrationForm, ResetPassword, UpdateEmail, UpdateName, UpdatePassword)
 from auto_maint.helpers import login_required, standard_schedule
 from auto_maint.models import Log, Maintenance, Odometer, User, Vehicle
 
@@ -41,7 +41,17 @@ def index():
         return redirect('/home')
 
     if forgot_form.submit_forgot.data and forgot_form.validate_on_submit():
-        flash('Email verification message sent.', 'primary')
+
+        # Find user in the DB.
+        user = User.query.filter(User.email == forgot_form.email.data).first()
+
+        # Send the user a forgot password email with token.
+        user.forgot_email()
+
+        # Confirm to user
+        flash('Password reset email sent. Please check your inbox.', 'primary')
+
+        # Send OK to jQuery on browser
         return jsonify(status='ok')
 
     # Check if form validated
@@ -106,6 +116,36 @@ def confirm_email(token):
     # Send user to home page
     return home()
 
+
+@app.route('/reset/<token>', methods=['GET', 'POST'])
+def password_reset(token):
+    """ Route for resetting password."""
+    # Attempt to confirm reset token otherwise flash error
+    try:
+        user_email = ts.loads(token, salt="password-reset-key", max_age=86400)
+    except:
+        flash('Unknown or outdated password reset token.', 'danger')
+        return redirect('/')
+
+    reset_form = ResetPassword(request.form)
+
+    if reset_form.validate_on_submit():
+        # Search DB for user.
+        user = User.query.filter(User.email == user_email).first()
+
+        # Update and store the user's new password hash
+        user.password_hash = generate_password_hash(reset_form.password.data)
+
+        # Log user in
+        session["user_id"] = user.user_id
+
+        db.session.commit()
+
+        flash('Password succesfully updated.', 'success')
+
+        return home()
+    
+    return render_template('password_reset.html', reset_form=reset_form)
 
 @app.route('/home', methods=['POST', 'GET'])
 @login_required

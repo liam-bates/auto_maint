@@ -68,6 +68,26 @@ class User(db.Model):
         # Send email
         send_email(msg)
 
+    def forgot_email(self):
+        """ Send the user a password reset email. """
+        msg = EmailMessage()
+        msg['Subject'] = 'Auto Maintenance - Password Reset'
+        msg['From'] = 'auto_maint@liam-bates.com'
+        msg['To'] = self.email
+
+        # Generate email confirmation token and URL
+        token = ts.dumps(self.email, salt='password-reset-key')
+        reset_url = url_for('password_reset', token=token, _external=True)
+
+        # Generate HTML for email
+        html = render_template(
+            'email/password_reset.html', user=self, reset_url=reset_url)
+        msg.set_content(html, subtype='html')
+
+        # Send email
+        send_email(msg)
+
+
     def delete(self):
         """ Method to delete the current vehicle object from the DB. """
         db.session.delete(self)
