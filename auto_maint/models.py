@@ -87,7 +87,6 @@ class User(db.Model):
         # Send email
         send_email(msg)
 
-
     def delete(self):
         """ Method to delete the current vehicle object from the DB. """
         db.session.delete(self)
@@ -120,23 +119,31 @@ class Vehicle(db.Model):
         Returns the current estimated mileage by looking at the last odometer
         reading and comparing it to the age of the vehicle.
         """
+
+        # Pull a list of sorted odometer readings from the db
         sorted_odos = sorted(self.odo_readings, key=lambda x: x.reading_date)
 
-        if not sorted_odos:
-            return 0
+        # Set the reading before to an initial reading of 0
+        reading_before = Odometer(reading=0, reading_date=self.vehicle_built)
 
-        if len(sorted_odos) >= 2:
-            second_last = sorted_odos[-2]
+        # Initialize empty list for miles per day calculations
+        mpd = []
 
-        else:
-            second_last = Odometer(reading=0, reading_date=self.vehicle_built)
+        # Iterate over the sorted readings and calculate the miles per day 
+        # between readings.
+        for odo in sorted_odos:
+            days_between = (
+                odo.reading_date - reading_before.reading_date).days
+            miles_between = odo.reading - reading_before.reading
+            mpd.append(miles_between / days_between)
+            # Set the reading before again for the next iteration
+            reading_before = odo
 
-        last = sorted_odos[-1]
-        days_between = (last.reading_date - second_last.reading_date).days
-        miles_between = last.reading - second_last.reading
-        mpd = miles_between / days_between
-        days_since = (datetime.date.today() - last.reading_date).days
-        estimate = (mpd * days_since) + last.reading
+        # Calculate the estimated current mileage based on average mpd figure
+        days_since = (
+            datetime.date.today() - sorted_odos[-1].reading_date).days
+        avg_mpd = sum(mpd) / len(mpd)
+        estimate = (avg_mpd * days_since) + sorted_odos[-1].reading
 
         return int(estimate)
 
