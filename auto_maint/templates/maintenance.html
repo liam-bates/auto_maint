@@ -12,7 +12,7 @@
 <button class="btn btn-danger" data-toggle="modal" data-target="#DeleteModal"><i class="fas fa-trash-alt"></i>
     Delete</a></button>
 
-<p><b>Frequency (miles): </b>{{ maintenance.freq_miles | mileage }}</p>
+<p><b>Frequency (miles): </b>{{ maintenance.freq_miles }}</p>
 <p><b>Frequency (months): </b>{{ maintenance.freq_months }}</p>
 <p><b>Miles until due: </b>{{ maintenance.miles_until_due() | mileage }}</p>
 <p><b>Days until due: </b>{{ maintenance.days_until_due() }}</p>
